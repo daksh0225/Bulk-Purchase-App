@@ -72,7 +72,7 @@ routes.route("/login").post(function(req, res){
     console.log(req.body.email)
     console.log(req.body.password)
     console.log(req.body.passwordHash)
-    Login.findOne({'email': req.body.email, 'passwordHash': req.body.passwordHash}, 'firstName', function(err, person){
+    Login.findOne({'email': req.body.email, 'passwordHash': req.body.passwordHash}, '_id firstName type', function(err, person){
         console.log('querying db')
         console.log(person)
         if(err) return handleError(err);

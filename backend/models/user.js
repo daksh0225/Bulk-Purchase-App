@@ -7,7 +7,8 @@ var UserSchema = new Schema(
         firstName: String,
         lastName: String,
         password: String,
-        passwordHash: String
+        passwordHash: String,
+        type: String
     },
     { collection: 'users'}
 )

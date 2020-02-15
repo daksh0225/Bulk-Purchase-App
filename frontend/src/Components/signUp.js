@@ -19,6 +19,11 @@ import AppBar from '@material-ui/core/AppBar';
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 import { withStyles } from '@material-ui/core/styles';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormLabel from '@material-ui/core/FormLabel';
+import { instanceOf } from 'prop-types';
+import { withCookies, Cookies } from 'react-cookie';
+import StyledRadio from '@material-ui/core/Radio';
 function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
@@ -57,6 +62,9 @@ const styles = theme => ({
 });
 
 class SignUp extends Component{
+  static propTypes = {
+      cookies: instanceOf(Cookies).isRequired
+  }
   constructor(props){
     super(props);
     this.state = {
@@ -66,7 +74,8 @@ class SignUp extends Component{
       firstName: '',
       lastName: '',
       password: '',
-      error: ''
+      error: '',
+      type: 'customer'
     }
     this.onChangeFirstname = this.onChangeFirstname.bind(this);
     this.onChangeLastname = this.onChangeLastname.bind(this);
@@ -74,8 +83,11 @@ class SignUp extends Component{
     this.onChangePassword = this.onChangePassword.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.goToLogin = this.goToLogin.bind(this);
+    this.userType = this.userType.bind(this);
   }
-
+  userType(event){
+    this.setState({type: event.target.value})
+  }
   goToLogin(event) {
     this.props.history.push('/login')
   }
@@ -97,13 +109,14 @@ class SignUp extends Component{
   }
   onSubmit(e) {
     e.preventDefault();
-
+    const {cookies} = this.props
     const newUser = {
         email: this.state.email,
         firstName: this.state.firstName,
         lastName: this.state.lastName,
         passwordHash: sha1(this.state.password+'secret'),
-        password: this.state.password
+        password: this.state.password,
+        type: this.state.type
     }
     if(newUser['email'] !== '' && newUser['firstName'] !== '' && newUser['lastName'] !== '' && newUser['password'] !== '')
     {
@@ -115,7 +128,20 @@ class SignUp extends Component{
           console.log(res.data)
           this.setState({
             error: res.data,
-        })
+          })
+          if(res.data == 'user added'){
+            cookies.set('loggedIn', true)
+            if(this.state.type == 'customer'){
+              cookies.set('customer', true)
+              cookies.set('vendor', false)
+            }
+            else{
+              cookies.set('customer', false)
+              cookies.set('vendor', true)
+            }
+            this.props.history.push('/')
+            window.location.reload()
+          }
       });
       this.setState({
         email: '',
@@ -209,6 +235,13 @@ class SignUp extends Component{
                 value = {this.state.email}
               />
             </Grid>
+            <Grid item xs = {12}>
+            <FormLabel component="legend">You Are a </FormLabel>
+            <RadioGroup defaultValue={this.state.type} aria-label="gender" name="customized-radios" onChange = {this.userType}>
+              <FormControlLabel value="customer" control={<StyledRadio />} label="Customer" />
+              <FormControlLabel value="vendor" control={<StyledRadio />} label="Vendor" />
+            </RadioGroup>
+            </Grid>
             <Grid item xs={12}>
               <TextField
                 variant="outlined"
@@ -259,4 +292,4 @@ class SignUp extends Component{
   }
 }
 
-export default withStyles(styles)(SignUp);
+export default withCookies(withStyles(styles)(SignUp));

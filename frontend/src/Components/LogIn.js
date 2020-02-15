@@ -73,6 +73,8 @@ class LogIn extends Component{
     super(props);
     const {cookies} = props
     cookies.set('loggedIn', false, {path: '/'})
+    cookies.set('vendor', false, {path: '/'})
+    cookies.set('customer', false, {path: '/'})
     this.state = {
       // classes: useStyles(),
       // history: useHistory(),
@@ -123,8 +125,16 @@ class LogIn extends Component{
                         email: '',
                         password: ''
                     })
-                    cookies.set('user', res.data.firstName)
+                    cookies.set('user', res.data._id)
                     cookies.set('loggedIn', true)
+                    if(res.data.type == 'customer'){
+                      cookies.set('customer', true)
+                      cookies.set('vendor', false)
+                    }
+                    else{
+                      cookies.set('customer', false)
+                      cookies.set('vendor', true)
+                    }
                     this.props.history.push('/')
                 }
                 this.setState({

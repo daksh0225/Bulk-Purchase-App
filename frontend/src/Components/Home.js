@@ -74,6 +74,8 @@ class Home extends Component{
         const {cookies} = this.props
         cookies.remove('user')
         cookies.remove('loggedIn')
+        cookies.remove('customer')
+        cookies.remove('vendor')
         this.props.history.push('/')
         window.location.reload()
     }
