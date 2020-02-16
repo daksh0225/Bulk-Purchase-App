@@ -12,7 +12,7 @@ import { withStyles } from '@material-ui/core/styles';
 import SignUp from './signUp.js'
 import { withCookies, Cookies } from 'react-cookie';
 import { instanceOf } from 'prop-types';
-import LogIn from './LogIn.js'
+import Vendor from './Vendor.js'
 import {
     BrowserRouter as Router,
     Switch,
@@ -65,8 +65,8 @@ class Home extends Component{
         console.log(cookies.get('loggedIn'))
         this.state = {
             loggedIn: cookies.get('loggedIn'),
-            customer: false,
-            vendor: false
+            customer: cookies.get('customer'),
+            vendor: cookies.get('vendor')
         }
         this.logOut = this.logOut.bind(this)
     }
@@ -83,22 +83,32 @@ class Home extends Component{
         const {classes} = this.props
         if(this.state.loggedIn == 'true'){
         console.log('fdslfjlsj')
-        return(
-            <AppBar position="static">
-                <Toolbar>
-                {/* <IconButton edge="start" color="red" aria-label="menu">
-                    <MenuIcon /> */}
-                {/* </IconButton> */}
-                <Typography variant="h6" className={classes.title} style={{flex: 1}}>
-                    Home
-                </Typography>
-                <Link>
-                    <Button color="inherit" className='float-right' onClick = {this.logOut}>Sign Out</Button>
-                </Link>
-                </Toolbar>
-                <Button>hello</Button>
-            </AppBar>
-        )
+        console.log('customer'+this.state.customer)
+        console.log('vendor'+this.state.vendor)
+            if(this.state.customer == 'true'){
+                console.log('hello')
+                return(
+                    <AppBar position="static">
+                        <Toolbar>
+                        {/* <IconButton edge="start" color="red" aria-label="menu">
+                            <MenuIcon /> */}
+                        {/* </IconButton> */}
+                        <Typography variant="h6" className={classes.title} style={{flex: 1}}>
+                            Home
+                        </Typography>
+                        <Link>
+                            <Button color="inherit" className='float-right' onClick = {this.logOut}>Sign Out</Button>
+                        </Link>
+                        </Toolbar>
+                        <Button>hello</Button>
+                    </AppBar>
+                )
+            }
+            else{
+                return(
+                    <Vendor />
+                )
+            }
         }
         else{
             return(
@@ -122,26 +132,5 @@ class Home extends Component{
         }
     }
 }
-// function Home(){
-//     const classes = useStyles()
-//     return (
-//         <AppBar position="static">
-//             <Toolbar>
-//             {/* <IconButton edge="start" color="red" aria-label="menu">
-//                 <MenuIcon /> */}
-//             {/* </IconButton> */}
-//             <Typography variant="h6" className={classes.title} style={{flex: 1}}>
-//                 Home
-//             </Typography>
-//             <Link to='/register'>
-//                 <Button color="inherit" className='float-right' onClick = "()">Register</Button>
-//             </Link>
-//             <Link to='/login'>
-//                 <Button color="inherit" className='float-right' onClick = "()">Sign In</Button>
-//             </Link>
-//             </Toolbar>
-//         </AppBar>
-//     )
-// }
 
 export default withCookies(withStyles(styles)(Home));

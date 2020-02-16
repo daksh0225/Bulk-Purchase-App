@@ -84,7 +84,9 @@ function App(props){
   // setCookie('loggedIn', false)
   // removeCookie('loggedIn')
   // cookie.save("loggedIn", true, {path: '/'})
-
+    // removeCookie('customer')
+    // removeCookie('loggedIn')
+    // removeCookie('vendor')
     return (
       <Router>
       <div>

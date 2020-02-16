@@ -8,7 +8,10 @@ const cors = require('cors')
 const routes = express.Router()
 
 let User = require('./models/user')
+let Product = require('./models/product')
 let Login = require('./models/login')
+let Query = require('./models/query')
+let Remover = require('./models/removeProduct')
 app.use(cors()) 
 app.use(bodyParser.json())
 
@@ -40,7 +43,37 @@ routes.route('/users').get(function(req, res) {
         }
     });
 });
-// Adding a new user
+
+routes.route('/products').post(function(req, res) {
+    console.log('fetching products')
+    console.log(req.body.userId)
+    let query = Query(req.body)
+    Query.find({'userId': req.body.userId},'productName bundlePrice bundleQuantity', function(err, users) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('sending response')
+            console.log(users)
+            res.json(users);
+        }
+    });
+});
+
+routes.route('/removeProduct').post(function(req, res) {
+    console.log('fetching products')
+    console.log(req.body.userId)
+    let query = Remover(req.body)
+    Remover.deleteOne({'userId': req.body.userId, 'productName': req.body.productName}, function(err, users) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('sending response')
+            console.log(users)
+            res.json(users);
+        }
+    });
+});
+
 routes.route("/signup").post(function(req, res) {
     console.log('why it')
     console.log(req.body)
@@ -57,6 +90,31 @@ routes.route("/signup").post(function(req, res) {
             .then(item => {
                 res.set('Content-Type', 'text/plain')
                 res.status(200).send('user added');
+            })
+            // .catch(err => {
+            //     res.status(400).send('Error');
+            // });
+            // res.redirect('/')           
+        }
+    })
+});
+
+routes.route("/addProduct").post(function(req, res) {
+    console.log('adding product')
+    console.log(req.body)
+    let product = new Product(req.body);
+    Product.findOne({'productName': req.body.productName, 'userId': req.body.userId}, 'productName', function(err, prod){
+        if(err) return handleError(err);
+        if (prod){
+            console.log('Product already exists')
+            res.status(200).send('Product already added')
+        }
+        else{
+            console.log('success')
+            product.save()
+            .then(item => {
+                res.set('Content-Type', 'text/plain')
+                res.status(200).send('product added');
             })
             // .catch(err => {
             //     res.status(400).send('Error');
@@ -92,34 +150,3 @@ app.use('/', routes)
 app.listen(port, function(){
 	console.log('on port 4000')
 })
-
-// app.get('/hello', function(req, res){
-// 	res.send('Hello world')
-// 	// res.sendFile(__dirname + '/index.html')
-// 	console.log('home page')
-// })
-// app.post('/quotes', function(req, res){
-// 	main(req, res).catch(console.error)
-// })
-// async function main(req, res){
-//     // const uri = "mongodb+srv://dbuser:dbpassword@custandven-mjntd.mongodb.net/test?retryWrites=true&w=majority";
-//     const uri = "mongodb://127.0.0.1:27017"
- 
-
-//     const client = new MongoClient(uri);
- 
-//     try {
-//         // Connect to the MongoDB cluster
-//         await client.connect();
- 
-//         // Make the appropriate DB calls
-//         console.log(client.db('temp'));
-//         client.db('temp').collection('test').save(req.body);
-//         res.redirect('/')
- 
-//     } catch (e) {
-//         console.error(e);
-//     } finally {
-//         await client.close();
-//     }
-// }

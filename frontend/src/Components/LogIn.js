@@ -118,22 +118,22 @@ class LogIn extends Component{
                         email: this.state.email,
                         password: ''
                     })
-                    cookies.set('loggedIn', false)
+                    cookies.set('loggedIn', false,  {maxAge: 3000})
                 }
                 else{
                     this.setState({
                         email: '',
                         password: ''
                     })
-                    cookies.set('user', res.data._id)
-                    cookies.set('loggedIn', true)
+                    cookies.set('user', res.data._id, {maxAge: 3000})
+                    cookies.set('loggedIn', true,  {maxAge: 3000})
                     if(res.data.type == 'customer'){
-                      cookies.set('customer', true)
-                      cookies.set('vendor', false)
+                      cookies.set('customer', true,  {maxAge: 3000})
+                      cookies.set('vendor', false,  {maxAge: 3000})
                     }
                     else{
-                      cookies.set('customer', false)
-                      cookies.set('vendor', true)
+                      cookies.set('customer', false,  {maxAge: 3000})
+                      cookies.set('vendor', true,  {maxAge: 3000})
                     }
                     this.props.history.push('/')
                 }
