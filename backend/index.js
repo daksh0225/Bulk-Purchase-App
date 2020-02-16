@@ -44,6 +44,21 @@ routes.route('/users').get(function(req, res) {
     });
 });
 
+routes.route('/allProducts').get(function(req, res) {
+    console.log('fetching products')
+    console.log(req.body.userId)
+    // let query = Query(req.body)
+    Query.find( function(err, users) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('sending response')
+            console.log(users)
+            res.json(users);
+        }
+    });
+});
+
 routes.route('/products').post(function(req, res) {
     console.log('fetching products')
     console.log(req.body.userId)
@@ -105,11 +120,11 @@ routes.route("/addProduct").post(function(req, res) {
     let product = new Product(req.body);
     Product.findOne({'productName': req.body.productName, 'userId': req.body.userId}, 'productName', function(err, prod){
         if(err) return handleError(err);
-        if (prod){
-            console.log('Product already exists')
-            res.status(200).send('Product already added')
-        }
-        else{
+        // if (prod){
+        //     console.log('Product already exists')
+        //     res.status(200).send('Product already added')
+        // }
+        // else{
             console.log('success')
             product.save()
             .then(item => {
@@ -120,7 +135,7 @@ routes.route("/addProduct").post(function(req, res) {
             //     res.status(400).send('Error');
             // });
             // res.redirect('/')           
-        }
+        // }
     })
 });
 

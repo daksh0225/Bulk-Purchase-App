@@ -79,7 +79,7 @@ const styles = theme => ({
   });
 
 
-  class Vendor extends Component{
+  class Customer extends Component{
     static propTypes = {
         cookies: instanceOf(Cookies).isRequired
     }
@@ -136,17 +136,17 @@ const styles = theme => ({
     
     fetchProducts = async() => {
         const {cookies} = this.props
-        const product = {
-            userId: cookies.get('user')
-        }
-        var post = axios.post('http://localhost:4000/products', product)
+        // const product = {
+        //     userId: cookies.get('user')
+        // }
+        var post = axios.get('http://localhost:4000/allProducts')
         .then(res => {
             console.log(res.data.length)
             this.setState({
                 data: res.data
             })
         })
-        // this.showProducts()
+        this.showProducts()
         return 
     }
 
@@ -251,9 +251,9 @@ const styles = theme => ({
                     <Typography variant="h6" className={classes.title} style={{flex: 1}}>
                         Home
                     </Typography>
-                    <Link>
+                    {/* <Link>
                         <Button color="black" className='float-right' onClick = {this.showForm}>ADD NEW PRODUCT</Button>
-                    </Link>
+                    </Link> */}
                     <Link>
                         <Button color="inherit" className='float-right' onClick = {this.logOut}>Sign Out</Button>
                     </Link>
@@ -330,11 +330,13 @@ const styles = theme => ({
                         </form>
                 </div>
                 <div className = {classes.divider}>
-                    <Typography>YOUR PRODUCTS</Typography>
+                    <Typography>All PRODUCTS</Typography>
                     <hr size="5" style={{color: 'black', display: 'block', backgroundColor: 'black'}}></hr>
                 </div>
                 <div>
                     <Grid container spacing={3} alignItems="center" justify="center">
+                        {/* {this.state.products} */}
+                        {/* {this.showProducts()} */}
                         {allProducts}
                     </Grid>
                     {/* <Card className={classes.root}>
@@ -364,4 +366,4 @@ const styles = theme => ({
         )
     }
   }
-  export default withCookies(withStyles(styles)(Vendor));
+  export default withCookies(withStyles(styles)(Customer));

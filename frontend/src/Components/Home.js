@@ -13,6 +13,7 @@ import SignUp from './signUp.js'
 import { withCookies, Cookies } from 'react-cookie';
 import { instanceOf } from 'prop-types';
 import Vendor from './Vendor.js'
+import Customer from './Customer.js'
 import {
     BrowserRouter as Router,
     Switch,
@@ -88,20 +89,21 @@ class Home extends Component{
             if(this.state.customer == 'true'){
                 console.log('hello')
                 return(
-                    <AppBar position="static">
-                        <Toolbar>
-                        {/* <IconButton edge="start" color="red" aria-label="menu">
-                            <MenuIcon /> */}
-                        {/* </IconButton> */}
-                        <Typography variant="h6" className={classes.title} style={{flex: 1}}>
-                            Home
-                        </Typography>
-                        <Link>
-                            <Button color="inherit" className='float-right' onClick = {this.logOut}>Sign Out</Button>
-                        </Link>
-                        </Toolbar>
-                        <Button>hello</Button>
-                    </AppBar>
+                    // <AppBar position="static">
+                    //     <Toolbar>
+                    //     {/* <IconButton edge="start" color="red" aria-label="menu">
+                    //         <MenuIcon /> */}
+                    //     {/* </IconButton> */}
+                    //     <Typography variant="h6" className={classes.title} style={{flex: 1}}>
+                    //         Home
+                    //     </Typography>
+                    //     <Link>
+                    //         <Button color="inherit" className='float-right' onClick = {this.logOut}>Sign Out</Button>
+                    //     </Link>
+                    //     </Toolbar>
+                    //     <Button>hello</Button>
+                    // </AppBar>
+                    <Customer />
                 )
             }
             else{
