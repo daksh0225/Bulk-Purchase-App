@@ -81,7 +81,7 @@ routes.route('/searchProducts').post(function(req, res) {
             });
     }
     else{
-        Searcher.find({'productName': req.body.productName, 'readyToDispatch': false, 'dispatched': false}, null, {sort: req.body.filter},     function(err, products) {
+        Searcher.find({'productName': req.body.productName, 'readyToDispatch': false, 'dispatched': false}, null, {sort: req.body.filter}, function(err, products) {
             if (err) {
                 console.log(err);
             } else {
@@ -102,75 +102,134 @@ routes.route('/getOrders').post(function(req, res) {
     var status = ''
     if(req.body.productName === ''){
         console.log('all')
-            Order.find({'userId': req.body.userId}, null, {sort: req.body.filter}, function(err, orders) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    // console.log('sending respo')
-                    // // console.log(orders)
-                    for(let i = 0; i<orders.length; i++){
-                    //     console.log(orders[i].productId)
-                    //     // console.log(orders[i].userId)
-                        Product.findOne({'_id': orders[i].productId}, '', function(err, product){
-                    //         if(err){
-                    //             console.log(err)
-                    //         }
-                    //         else{
-                                // console.log(product)
-                            if(product){
-                                orders[i].set('itemsLeft', product.itemsLeft)
-                                if(product.itemsLeft > 0){
-                                    status = 'waiting'
-                                }
-                                else{
-                                    if(product.readyToDispatch == true){
-                                        status = 'placed'
-                                    }
-                                    else{
-                                        status = 'dispatched'
-                                    }
-                                }
-                                const order = {
-                                    'userId': orders[i].userId,
-                                    'productId': orders[i].productId,
-                                    'productName': orders[i].productName,
-                                    'itemsLeft': product.itemsLeft,
-                                    'itemQuantity': orders[i].itemQuantity,
-                                    'status': status
-                                }
-                                // console.log(order)
-                                placedOrder.push(order)
-                                // console.log(placedOrder)
-                            }
-                            else{
-                                const order = {
-                                    'userId': orders[i].userId,
-                                    'productId': orders[i].productId,
-                                    'productName': orders[i].productName,
-                                    'itemsLeft': -1,
-                                    'itemQuantity': orders[i].itemQuantity,
-                                    'status': 'canceled'
-                                } 
-                            }
-                            if(i==orders.length -1 ){
-                                console.log(placedOrder)
-                                res.send(placedOrder);
-                            }
-                    //         }
-                        })
-                        // console.log(orders[i].itemsLeft)
-                    }
-                }
-            });
-    }
-    else{
-        Order.find({'userId': req.body.userId, 'productName': req.body.productName}, null, {sort: req.body.filter},     function(err, orders) {
+        Order.find({'userId': req.body.userId}, null, {sort: req.body.filter}, function(err, orders) {
             if (err) {
                 console.log(err);
             } else {
-                console.log('sending response')
-                // console.log(products)
-                res.json(orders);
+                // console.log('sending respo')
+                // // console.log(orders)
+                for(let i = 0; i<orders.length; i++){
+                //     console.log(orders[i].productId)
+                //     // console.log(orders[i].userId)
+                    Product.findOne({'_id': orders[i].productId}, '', function(err, product){
+                //         if(err){
+                //             console.log(err)
+                //         }
+                //         else{
+                            // console.log(product)
+                        if(product){
+                            orders[i].set('itemsLeft', product.itemsLeft)
+                            if(product.itemsLeft > 0){
+                                status = 'waiting'
+                            }
+                            else{
+                                if(product.dispatched == true){
+                                    status = 'dispatched'
+                                }
+                                else if(product.readyToDispatch == true){
+                                    status = 'placed'
+                                }
+                            }
+                            const order = {
+                                '_id': product._id,
+                                'userId': orders[i].userId,
+                                'productId': orders[i].productId,
+                                'productName': orders[i].productName,
+                                'itemsLeft': product.itemsLeft,
+                                'itemQuantity': orders[i].itemQuantity,
+                                'status': status,
+                                'orderId': orders[i]._id
+                            }
+                            // console.log(order)
+                            placedOrder.push(order)
+                            // console.log(placedOrder)
+                        }
+                        else{
+                            const order = {
+                                '_id': product._id,
+                                'userId': orders[i].userId,
+                                'productId': orders[i].productId,
+                                'productName': orders[i].productName,
+                                'itemsLeft': -1,
+                                'itemQuantity': orders[i].itemQuantity,
+                                'status': 'canceled',
+                                'orderId': orders[i]._id
+                            } 
+                        }
+                        if(i==orders.length -1 ){
+                            console.log(placedOrder)
+                            res.send(placedOrder);
+                        }
+                //         }
+                    })
+                    // console.log(orders[i].itemsLeft)
+                }
+            }
+        });
+    }
+    else{
+        Order.find({'userId': req.body.userId, 'productName': req.body.productName}, '', {sort: req.body.filter},     function(err, orders) {
+        if (err) {
+                console.log(err);
+            } else {
+                // console.log('sending respo')
+                // // console.log(orders)
+                for(let i = 0; i<orders.length; i++){
+                //     console.log(orders[i].productId)
+                //     // console.log(orders[i].userId)
+                    Product.findOne({'_id': orders[i].productId}, '', function(err, product){
+                //         if(err){
+                //             console.log(err)
+                //         }
+                //         else{
+                            // console.log(product)
+                        if(product){
+                            orders[i].set('itemsLeft', product.itemsLeft)
+                            if(product.itemsLeft > 0){
+                                status = 'waiting'
+                            }
+                            else{
+                                if(product.dispatched == true){
+                                    status = 'dispatched'
+                                }
+                                else if(product.readyToDispatch == true){
+                                    status = 'placed'
+                                }
+                            }
+                            const order = {
+                                '_id': product._id,
+                                'userId': orders[i].userId,
+                                'productId': orders[i].productId,
+                                'productName': orders[i].productName,
+                                'itemsLeft': product.itemsLeft,
+                                'itemQuantity': orders[i].itemQuantity,
+                                'status': status,
+                                'orderId': orders[i]._id
+                            }
+                            // console.log(order)
+                            placedOrder.push(order)
+                            // console.log(placedOrder)
+                        }
+                        else{
+                            const order = {
+                                '_id': product._id,
+                                'userId': orders[i].userId,
+                                'productId': orders[i].productId,
+                                'productName': orders[i].productName,
+                                'itemsLeft': -1,
+                                'itemQuantity': orders[i].itemQuantity,
+                                'status': 'canceled',
+                                'orderId': orders[i]._id
+                            }
+                        }
+                        if(i==orders.length -1 ){
+                            console.log(placedOrder)
+                            res.send(placedOrder);
+                        }
+                //         }
+                    })
+                    // console.log(orders[i].itemsLeft)
+                }
             }
         });
     }
@@ -180,7 +239,7 @@ routes.route('/products').post(function(req, res) {
     console.log('fetching products')
     console.log(req.body.userId)
     let query = Query(req.body)
-    Query.find({'userId': req.body.userId, 'readyToDispatch': false, 'dispatched': false},'productName bundleQuantity bundlePrice itemsLeft', function(err, users) {
+    Query.find({'userId': req.body.userId, 'readyToDispatch': false, 'dispatched': false, 'removed': false},'productName bundleQuantity bundlePrice itemsLeft', function(err, users) {
         if (err) {
             console.log(err);
         } else {
@@ -192,10 +251,10 @@ routes.route('/products').post(function(req, res) {
 });
 
 routes.route('/readyProducts').post(function(req, res) {
-    console.log('fetching products')
+    console.log('fetching ready products')
     console.log(req.body.userId)
     let query = Query(req.body)
-    Query.find({'userId': req.body.userId, 'readyToDispatch': true, 'dispatched': false},'productName bundleQuantity bundlePrice itemsLeft', function(err, users) {
+    Query.find({'userId': req.body.userId, 'readyToDispatch': true, 'dispatched': false, 'removed': false},'productName bundleQuantity bundlePrice itemsLeft', function(err, users) {
         if (err) {
             console.log(err);
         } else {
@@ -209,6 +268,7 @@ routes.route('/readyProducts').post(function(req, res) {
 routes.route('/placeOrder').post(function(req, res) {
     console.log('placing order')
     // console.log(req.body.userId)
+    console.log(req.body.productId)
     itemsLeft = req.body.itemsLeft
     let order = Order(req.body)
     if(itemsLeft == 0){
@@ -243,11 +303,57 @@ routes.route('/placeOrder').post(function(req, res) {
     }
 })
 
+routes.route('/editOrder').post(function(req, res) {
+    console.log('editing order')
+    // console.log(req.body.userId)
+    itemsLeft = req.body.itemsLeft
+    console.log(req.body.orderId)
+    console.log(req.body.productId)
+    // let order = Order(req.body)
+    if(itemsLeft == 0){
+        Product.findByIdAndUpdate({'_id': req.body.productId}, {'itemsLeft': itemsLeft, readyToDispatch: true}, function(err, product){
+            if(err){
+                console.log(err)
+            }
+            else{
+                // console.log(product)
+            }
+        })
+        // order.save()
+        // .then(res => {
+        //         console.log('order placed')
+        //         console.log(res)
+        // });
+        Order.findByIdAndUpdate({'_id': req.body.orderId}, {'itemQuantity': itemQuantity}, function(err, order){
+            if(err) console.log(err)
+        })
+    }
+    else{
+        Product.findByIdAndUpdate({'_id': req.body.productId}, {'itemsLeft': itemsLeft}, function(err, product){
+            if(err){
+                console.log(err)
+            }
+            else{
+                // console.log(product)
+            }
+        })
+        // order.save()
+        // .then(res => {
+        //         console.log('order placed')
+        //         console.log(res)
+        // });
+        Order.findByIdAndUpdate({'_id': req.body.orderId}, {'itemQuantity': req.body.itemQuantity}, function(err, product){
+            // if(err) console.log(err)
+            console.log('helo')
+        })
+    }
+})
+
 routes.route('/removeProduct').post(function(req, res) {
     console.log('fetching products')
     console.log(req.body.userId)
     let query = Remover(req.body)
-    Remover.deleteOne({'userId': req.body.userId, 'productName': req.body.productName}, function(err, users) {
+    Product.findByIdAndUpdate(req.body.productId, {'removed': true}, function(err, users) {
         if (err) {
             console.log(err);
         } else {
@@ -255,6 +361,22 @@ routes.route('/removeProduct').post(function(req, res) {
             console.log(users)
             res.json(users);
         }
+    });
+});
+
+routes.route('/dispatchProduct').post(function(req, res) {
+    console.log('dispatching products')
+    console.log(req.body.userId)
+    // let query = Remover(req.body)
+    Product.findByIdAndUpdate(req.body.productId, {'dispatched': true}, function(err, products) {
+        if (err) {
+            console.log(err);
+        } 
+        // else {
+        //     console.log('sending response')
+        //     console.log(users)
+        //     res.json(users);
+        // }
     });
 });
 

@@ -65,7 +65,7 @@ const styles = theme => ({
         // background: 'linear-gradient(45deg, #CE0B80 30%, #FF8E53 90%)'
     },
     card: {
-        background: 'linear-gradient(90deg, #02acbf 30%, #046c78 90%)'
+        // background: 'linear-gradient(90deg, #02acbf 30%, #046c78 90%)'
     }
     // toolbar: {
     //   display: 'flex',
@@ -110,7 +110,7 @@ class Product extends Component{
                         </Typography> */}
                     </CardContent>
                     <CardActions>
-                        <Button size="small" style={{color: "red"}} onClick = {() => {this.props.remove((this.props.item.productName))}}>{this.props.action}</Button>
+                        <Button size="small" style={{color: "red"}} onClick = {() => {this.props.remove((this.props.item._id))}}>{this.props.action}</Button>
                     </CardActions>
                 </Card>
             </Grid>

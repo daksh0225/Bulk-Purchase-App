@@ -112,15 +112,15 @@ const styles = theme => ({
     dispatchProduct(productName){
         const {cookies} = this.props
         const product = {
-            productName: productName,
+            productId: productName,
             userId: cookies.get('user')
         }
         var post = axios.post('http://localhost:4000/dispatchProduct', product)
         .then(res => {
             console.log(res.data)
             // window.location.reload()
-            this.fetchProducts()
         })
+        this.props.fetchProducts()
     }
     componentDidMount(){
         this.fetchProducts()
@@ -139,7 +139,7 @@ const styles = theme => ({
         const product = {
             userId: cookies.get('user')
         }
-        var post = axios.post('http://localhost:4000/dispatchProduct', product)
+        var post = axios.post('http://localhost:4000/readyProducts', product)
         .then(res => {
             console.log(res.data.length)
             this.setState({
@@ -151,12 +151,12 @@ const styles = theme => ({
     }
     render(){
         const {classes} = this.props
-        const bull = <span className={classes.bullet}>•</span>;
-        const allProducts = this.state.data.map(product => <Product key = {product._id} item = {product} remove = {this.dispatchProduct} action = 'Dispatch'/>)
+        console.log(this.props.data)
+        const allProducts = this.props.data.map(product => <Product key = {product._id} item = {product} remove = {this.dispatchProduct} action = 'Dispatch'/>)
         return(
             <div>
                 <div className = {classes.divider}>
-                    <Typography>YOUR PRODUCTS</Typography>
+                    <Typography>READY TO DISPATCH PRODUCTS</Typography>
                     <hr size="5" style={{color: 'black', display: 'block', backgroundColor: 'black'}}></hr>
                 </div>
                 <div>

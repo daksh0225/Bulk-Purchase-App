@@ -157,6 +157,7 @@ class CustomerProductView extends Component{
         console.log(this.state[id])
         console.log(availabul)
         console.log(this.state.itemQuantity)
+        console.log(id)
         if(this.state[id] > availabul){
             console.log('fjslfsj')
             this.setState({invalidOrder: true})
@@ -194,6 +195,7 @@ class CustomerProductView extends Component{
     }
     onChangeItemQuantity(event, id) {
         console.log(event.target.value)
+        console.log(id)
         this.setState({ [id]: event.target.value }, () => {
             console.log(this.state)
         });

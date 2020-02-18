@@ -120,7 +120,7 @@ class Product extends Component{
         var activeStep = 0
         if(this.props.item.status === 'waiting') activeStep = 0
         else if(this.props.item.status === 'placed') activeStep = 1
-        else if(this.props.item.status === 'dispatched') activeStep = 2
+        else if(this.props.item.status === 'dispatched') activeStep = 3
         return(
             <Grid item xs={5} className={classes.divider}>
                 <Card className={classes.root, classes.card}>
@@ -176,14 +176,16 @@ class Product extends Component{
                                     {/* <Typography className={classes.pos} color="textSecondary">
                                     adjective
                                     </Typography> */}
-                                    <Typography variant="body2" component="p">
+                                    {/* <Typography variant="body2" component="p">
                                         Status: {this.props.item.status}
-                                    </Typography>
+                                    </Typography> */}
+                                    <div style={this.props.item.status === 'waiting' ? {} : {display: 'none'}}>
+                                        <Typography variant="body2" component="p">
+                                            Items left: {this.props.item.itemsLeft}
+                                        </Typography>
+                                    </div>
                                     <Typography variant="body2" component="p">
-                                        Items Left: {this.props.item.itemsLeft}
-                                    </Typography>
-                                    <Typography variant="body2" component="p">
-                                        Items Ordered: {this.props.item.itemQuantity}
+                                        You Ordered: {this.props.item.itemQuantity}
                                     </Typography>
                                 </Box>
                                 <div display='flex' flexDirection='column' alignItems="center" justifyContent="space-evenly">
@@ -194,6 +196,9 @@ class Product extends Component{
                                                 <StepLabel>{label}</StepLabel>
                                             </Step>
                                             ))}
+                                            {/* <Step>
+                                                <StepLabel>wowo</StepLabel>
+                                            </Step> */}
                                         </Stepper>
                                     </div>
                                     <div style={this.props.item.status === 'waiting' ? {} : {display: 'none'}}>
@@ -223,8 +228,8 @@ class Product extends Component{
                         <span style = {this.props.type === 'products' ? {} : {display: 'none'}}>
                             <Button size="small" style={{color: "blue"}} onClick = {() => this.props.order(this.props.item.productName, this.props.item.itemsLeft, this.props.item._id)} >Place Order</Button>
                         </span>
-                        <span style = {this.props.type === 'orders' ? {} : {display: 'none'}}>
-                            <Button size="small" style={{color: "blue"}} onClick = {() => this.props.order(this.props.item.productName, this.props.item.itemsLeft, this.props.item._id)} >Edit Order</Button>
+                        <span style = {this.props.type === 'orders' && this.props.item.status === 'waiting'? {} : {display: 'none'}}>
+                            <Button size="small" style={{color: "blue"}} onClick = {() => this.props.order(this.props.item.orderId, this.props.item.productName, this.props.item.itemsLeft, this.props.item._id, this.props.item.itemQuantity)} >Edit Order</Button>
                         </span>
                     </CardActions>
                 </Card>

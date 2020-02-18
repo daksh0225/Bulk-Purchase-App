@@ -9,7 +9,8 @@ var ProductSchema = new Schema(
     	bundleQuantity: Number,
     	itemsLeft: Number,
     	readyToDispatch: Boolean,
-    	dispatched: Boolean
+    	dispatched: Boolean,
+    	removed: Boolean
     },
     { collection: 'products'}
 )

@@ -68,7 +68,7 @@ const styles = theme => ({
         // background: 'linear-gradient(45deg, #CE0B80 30%, #FF8E53 90%)'
     },
     card: {
-        background: 'linear-gradient(90deg, #02acbf 30%, #046c78 90%)'
+        // background: 'linear-gradient(90deg, #02acbf 30%, #046c78 90%)'
     }
     // toolbar: {
     //   display: 'flex',
@@ -113,7 +113,7 @@ const styles = theme => ({
     removeProduct(productName){
         const {cookies} = this.props
         const product = {
-            productName: productName,
+            productId: productName,
             userId: cookies.get('user')
         }
         var post = axios.post('http://localhost:4000/removeProduct', product)

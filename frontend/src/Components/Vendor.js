@@ -110,7 +110,8 @@ const styles = theme => ({
         this.showForm = this.showForm.bind(this)
         this.onSubmit = this.onSubmit.bind(this)
         this.changeView = this.changeView.bind(this)
-        // this.fetchProducts = this.fetchProducts.bind(this)
+        this.dispatchProduct = this.dispatchProduct.bind(this)
+        this.fetchProducts = this.fetchProducts.bind(this)
         // this.removeProduct = this.removeProduct.bind(this)
         console.log(this.state.view)
     }
@@ -118,6 +119,7 @@ const styles = theme => ({
         this.setState({
             view: view
         })
+        this.fetchProducts()
         console.log(this.state.view)
     }
     showForm(){
@@ -131,6 +133,36 @@ const styles = theme => ({
                 showMyComponent: true
             })
         }
+    }
+    fetchProducts = async() => {
+        const {cookies} = this.props
+        const product = {
+            userId: cookies.get('user')
+        }
+        var post = axios.post('http://localhost:4000/readyProducts', product)
+        .then(res => {
+            console.log(res.data.length)
+            this.setState({
+                data: res.data
+            }, () =>{
+                console.log(this.state.data)
+            })
+        })
+        // this.showProducts()
+        return 
+    }
+    dispatchProduct(productName){
+        const {cookies} = this.props
+        const product = {
+            productId: productName,
+            userId: cookies.get('user')
+        }
+        var post = axios.post('http://localhost:4000/dispatchProduct', product)
+        .then(res => {
+            console.log(res.data)
+            // window.location.reload()
+        })
+        this.fetchProducts()
     }
     logOut(){
         const {cookies} = this.props
@@ -161,7 +193,8 @@ const styles = theme => ({
             bundleQuantity: this.state.bundleQuantity,
             itemsLeft: this.state.bundleQuantity,
             readyToDispatch: false,
-            dispatched: false
+            dispatched: false,
+            removed: false
             // type: this.state.type
         }
         if(newProduct['productName'] !== '' && newProduct['bundlePrice'] > 0 && newProduct['bundleQuantity'] > 0)
@@ -212,11 +245,14 @@ const styles = theme => ({
                     </Typography>
                     <Button color="inherit" className='float-right' onClick = {this.showForm}>ADD NEW PRODUCT</Button>
                     {/* <Link to='/readyToDispatch' color='inherit'> */}
-                    <span style={this.state.view ==='products' ? {} : {display: 'none'}}>
+                    <span style={this.state.view !=='readyToDispatch' ? {} : {display: 'none'}}>
                         <Button color="inherit" className='float-right' onClick = {() => this.changeView('readyToDispatch')}>Ready to Dispatch</Button>
                     </span>
-                    <span style={this.state.view ==='readyToDispatch' ? {} : {display: 'none'}}>
+                    <span style={this.state.view !=='products' ? {} : {display: 'none'}}>
                         <Button color="inherit" className='float-right' onClick = {() => this.changeView('products')}>See Available Products</Button>
+                    </span>
+                    <span style={this.state.view !=='dispatched' ? {} : {display: 'none'}}>
+                        <Button color="inherit" className='float-right' onClick = {() => this.changeView('dispatched')}>Dispatched Products</Button>
                     </span>
                     {/* </Link> */}
                     <Button color="inherit" className='float-right' onClick = {this.logOut}>Sign Out</Button>
@@ -296,7 +332,7 @@ const styles = theme => ({
                         <VendorProductView />
                     </div> 
                     <div style={this.state.view === 'readyToDispatch' ? {} : {display: 'none'}}>
-                        <ReadyToDispatch />
+                        <ReadyToDispatch data = {this.state.data} fetchProducts = {this.fetchProducts}/>
                     </div> 
                 </Container>
             </div>

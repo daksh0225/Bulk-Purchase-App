@@ -153,14 +153,15 @@ class CustomerOrders extends Component{
         return 
     }
 
-    orderProduct(productName, availabul, id){
+    orderProduct(orderId, productName, availabul, id, curQuantity){
         console.log("ahsdfjhasljkdhf", productName)
         const {cookies} = this.props
         console.log('wow')
-        console.log(this.state[id])
-        console.log(availabul)
-        console.log(this.state.itemQuantity)
-        if(this.state[id] > availabul){
+        // console.log(this.state[id])
+        // console.log(availabul)
+        // console.log(this.state.itemQuantity)
+        console.log(id)
+        if(this.state[id] > availabul + curQuantity){
             console.log('fjslfsj')
             this.setState({invalidOrder: true})
         }
@@ -168,15 +169,16 @@ class CustomerOrders extends Component{
             const order = {
                 userId: cookies.get('user'),
                 itemQuantity: this.state[id],
-                itemsLeft: availabul - this.state[id],
-                productId: id
+                itemsLeft: availabul - this.state[id] + curQuantity,
+                productId: id,
+                orderId: orderId
             }
-            axios.post('http://localhost:4000/placeOrder', order)
+            axios.post('http://localhost:4000/editOrder', order)
             .then(res => {
                 console.log(res)
             })
             this.setState({order: true})
-            this.fetchProducts()
+            this.props.fetchProducts()
             // window.location.reload()
         }
     }
@@ -196,8 +198,9 @@ class CustomerOrders extends Component{
     }
     onChangeItemQuantity(event, id) {
         console.log(event.target.value)
+        console.log(id)
         this.setState({ [id]: event.target.value }, () => {
-            console.log(this.state)
+            // console.log(this.stat)
         });
     }
     onChangeQuantity(event) {
@@ -213,7 +216,7 @@ class CustomerOrders extends Component{
     }
     render(){
         const {classes} = this.props
-        const allProducts = this.props.data.map(product => <Product key = {product._id} item = {product} type = 'orders'/>)
+        const allProducts = this.props.data.map(product => <Product item = {product} type = 'orders' order = {this.orderProduct} onChangeItemQuantity = {this.onChangeItemQuantity}/>)
         return(
             <div>
                 <div className = {classes.divider}>
