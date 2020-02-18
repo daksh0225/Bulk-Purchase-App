@@ -12,6 +12,8 @@ let Product = require('./models/product')
 let Login = require('./models/login')
 let Query = require('./models/query')
 let Remover = require('./models/removeProduct')
+let Searcher = require('./models/searchProduct')
+let Order = require('./models/order')
 app.use(cors()) 
 app.use(bodyParser.json())
 
@@ -53,17 +55,49 @@ routes.route('/allProducts').get(function(req, res) {
             console.log(err);
         } else {
             console.log('sending response')
-            console.log(users)
+            // console.log(users)
             res.json(users);
         }
     });
+});
+
+routes.route('/searchProducts').post(function(req, res) {
+    console.log('fetching products')
+    console.log(req.body.productName)
+    console.log(req.body.filter)
+    // let query = Query(req.body)
+    // if(req.body.filter === 'itemsLeft')
+    const {name, filter} = req.body
+    if(req.body.productName === ''){
+        console.log('all')
+            Query.find({'readyToDispatch': false, 'dispatched': false}, null, {sort: filter}, function(err, users) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log('sending response')
+                    console.log(users)
+                    res.json(users);
+                }
+            });
+    }
+    else{
+        Searcher.find({'productName': req.body.productName}, 'productName bundlePrice bundleQuantity', {sort: req.body.filter},     function(err, products) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log('sending response')
+                // console.log(products)
+                res.json(products);
+            }
+        });
+    }
 });
 
 routes.route('/products').post(function(req, res) {
     console.log('fetching products')
     console.log(req.body.userId)
     let query = Query(req.body)
-    Query.find({'userId': req.body.userId},'productName bundlePrice bundleQuantity', function(err, users) {
+    Query.find({'userId': req.body.userId, 'readyToDispatch': false, 'dispatched': false},'productName bundleQuantity bundlePrice itemsLeft', function(err, users) {
         if (err) {
             console.log(err);
         } else {
@@ -73,6 +107,56 @@ routes.route('/products').post(function(req, res) {
         }
     });
 });
+
+routes.route('/readyProducts').post(function(req, res) {
+    console.log('fetching products')
+    console.log(req.body.userId)
+    let query = Query(req.body)
+    Query.find({'userId': req.body.userId, 'readyToDispatch': true, 'dispatched': false},'productName bundleQuantity bundlePrice itemsLeft', function(err, users) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('sending response')
+            console.log(users)
+            res.json(users);
+        }
+    });
+});
+
+routes.route('/placeOrder').post(function(req, res) {
+    console.log('placing order')
+    // console.log(req.body.userId)
+    itemsLeft = req.body.itemsLeft
+    let order = Order(req.body)
+    if(itemsLeft == 0){
+        Product.findByIdAndUpdate({'_id': req.body.productId}, {'itemsLeft': itemsLeft, readyToDispatch: true}, function(err, product){
+            if(err){
+                console.log(err)
+            }
+            else{
+                // console.log(product)
+            }
+        })
+        order.save()
+        .then(res => {
+                console.log('order placed')
+        });
+    }
+    else{
+        Product.findByIdAndUpdate({'_id': req.body.productId}, {'itemsLeft': itemsLeft}, function(err, product){
+            if(err){
+                console.log(err)
+            }
+            else{
+                // console.log(product)
+            }
+        })
+        order.save()
+        .then(res => {
+                console.log('order placed')
+        });
+    }
+})
 
 routes.route('/removeProduct').post(function(req, res) {
     console.log('fetching products')

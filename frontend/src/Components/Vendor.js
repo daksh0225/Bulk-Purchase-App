@@ -30,6 +30,8 @@ import {
   } from "react-router-dom";
 import { Container, Card } from '@material-ui/core';
 import Product from './Product.js'
+import VendorProductView from './VendorProductView.js';
+import ReadyToDispatch from './readyToDispatch.js';
 
 const phash = require('password-hash')
 const sha1 = require('sha1')
@@ -89,6 +91,7 @@ const styles = theme => ({
         console.log(cookies.get('loggedIn'))
         this.state = {
             showMyComponent: false,
+            view: 'products',
             loggedIn: cookies.get('loggedIn'),
             customer: cookies.get('customer'),
             vendor: cookies.get('vendor'),
@@ -106,60 +109,17 @@ const styles = theme => ({
         this.logOut = this.logOut.bind(this)
         this.showForm = this.showForm.bind(this)
         this.onSubmit = this.onSubmit.bind(this)
-        this.fetchProducts = this.fetchProducts.bind(this)
-        this.removeProduct = this.removeProduct.bind(this)
+        this.changeView = this.changeView.bind(this)
+        // this.fetchProducts = this.fetchProducts.bind(this)
+        // this.removeProduct = this.removeProduct.bind(this)
+        console.log(this.state.view)
     }
-    removeProduct(productName){
-        const {cookies} = this.props
-        const product = {
-            productName: productName,
-            userId: cookies.get('user')
-        }
-        var post = axios.post('http://localhost:4000/removeProduct', product)
-        .then(res => {
-            console.log(res.data)
-            // window.location.reload()
-            this.fetchProducts()
+    changeView(view){
+        this.setState({
+            view: view
         })
+        console.log(this.state.view)
     }
-    componentDidMount(){
-        this.fetchProducts()
-        .then(res => {
-            // this.setState({
-            //     data: res.body,
-            // })
-        })
-        .catch(err => console.log(err))
-        // this.showProducts()
-        // console.log(this.products)
-    }
-    
-    fetchProducts = async() => {
-        const {cookies} = this.props
-        const product = {
-            userId: cookies.get('user')
-        }
-        var post = axios.post('http://localhost:4000/products', product)
-        .then(res => {
-            console.log(res.data.length)
-            this.setState({
-                data: res.data
-            })
-        })
-        // this.showProducts()
-        return 
-    }
-
-    onChangeProductName(event) {
-        this.setState({ productName: event.target.value });
-    }
-    onChangePrice(event) {
-        this.setState({ bundlePrice: event.target.value });
-    }
-    onChangeQuantity(event) {
-        this.setState({ bundleQuantity: event.target.value });
-    }
-  
     showForm(){
         if(this.state.showMyComponent == true){
             this.setState({
@@ -181,6 +141,16 @@ const styles = theme => ({
         // this.props.history.push('/')
         window.location.reload()
     }
+
+    onChangeProductName(event) {
+        this.setState({ productName: event.target.value });
+    }
+    onChangePrice(event) {
+        this.setState({ bundlePrice: event.target.value });
+    }
+    onChangeQuantity(event) {
+        this.setState({ bundleQuantity: event.target.value });
+    }
     onSubmit(e) {
         e.preventDefault();
         const {cookies} = this.props
@@ -188,11 +158,13 @@ const styles = theme => ({
             userId: this.state.userId,
             productName: this.state.productName,
             bundlePrice: this.state.bundlePrice,
-            // passwordHash: sha1(this.state.password+'secret'),
             bundleQuantity: this.state.bundleQuantity,
+            itemsLeft: this.state.bundleQuantity,
+            readyToDispatch: false,
+            dispatched: false
             // type: this.state.type
         }
-        if(newProduct['productName'] !== '' && newProduct['bundlePrice'] != 0 && newProduct['bundleQuantity'] != 0)
+        if(newProduct['productName'] !== '' && newProduct['bundlePrice'] > 0 && newProduct['bundleQuantity'] > 0)
         {
           this.setState({
             error: ''
@@ -203,19 +175,6 @@ const styles = theme => ({
                 this.setState({
                     error: res.data,
                 })
-            //   if(res.data == 'user added'){
-            //     cookies.set('loggedIn', true)
-            //     if(this.state.type == 'customer'){
-            //       cookies.set('customer', true)
-            //       cookies.set('vendor', false)
-            //     }
-            //     else{
-            //       cookies.set('customer', false)
-            //       cookies.set('vendor', true)
-            //     }
-            //     this.props.history.push('/')
-            //     window.location.reload()
-            //   }
             });
             this.setState({
                 productName: '',
@@ -251,114 +210,94 @@ const styles = theme => ({
                     <Typography variant="h6" className={classes.title} style={{flex: 1}}>
                         Home
                     </Typography>
-                    <Link>
-                        <Button color="black" className='float-right' onClick = {this.showForm}>ADD NEW PRODUCT</Button>
-                    </Link>
-                    <Link>
-                        <Button color="inherit" className='float-right' onClick = {this.logOut}>Sign Out</Button>
-                    </Link>
+                    <Button color="inherit" className='float-right' onClick = {this.showForm}>ADD NEW PRODUCT</Button>
+                    {/* <Link to='/readyToDispatch' color='inherit'> */}
+                    <span style={this.state.view ==='products' ? {} : {display: 'none'}}>
+                        <Button color="inherit" className='float-right' onClick = {() => this.changeView('readyToDispatch')}>Ready to Dispatch</Button>
+                    </span>
+                    <span style={this.state.view ==='readyToDispatch' ? {} : {display: 'none'}}>
+                        <Button color="inherit" className='float-right' onClick = {() => this.changeView('products')}>See All Products</Button>
+                    </span>
+                    {/* </Link> */}
+                    <Button color="inherit" className='float-right' onClick = {this.logOut}>Sign Out</Button>
                     </Toolbar>
                 </AppBar>
                 <Container>
-                <div style={this.state.showMyComponent ? {} : { display: 'none' }}>
-                    <form className={classes.form} Validate>
-                        <Grid container spacing={3} alignItems="center" justify="space-around">
-                            <Grid item>
-                                <TextField
-                                    // error = "false"
-                                    variant="outlined"
-                                    required
-                                    fullWidth
-                                    id="productName"
-                                    label="Product Name"
-                                    name="productName"
-                                    autoComplete="productName"
-                                    onChange = {this.onChangeProductName}
-                                    value = {this.state.productName}
-                                />
+                    <div style={this.state.showMyComponent ? {} : { display: 'none' }}>
+                        <form className={classes.form} Validate>
+                            <Grid container spacing={3} alignItems="center" justify="space-around">
+                                <Grid item>
+                                    <TextField
+                                        // error = "false"
+                                        variant="outlined"
+                                        required
+                                        fullWidth
+                                        id="productName"
+                                        label="Product Name"
+                                        name="productName"
+                                        autoComplete="productName"
+                                        onChange = {this.onChangeProductName}
+                                        value = {this.state.productName}
+                                    />
+                                </Grid>
+                                <Grid item >
+                                    <TextField
+                                        variant="outlined"
+                                        required
+                                        fullWidth
+                                        name="bundlePrice"
+                                        label="Bundle Price"
+                                        type="number"
+                                        id="bundlePrice"
+                                        autoComplete="bundlePrice"
+                                        onChange = {this.onChangePrice}
+                                        value = {this.state.bundlePrice}
+                                    />
+                                </Grid>
+                                <Grid item>
+                                    <TextField
+                                        variant="outlined"
+                                        required
+                                        fullWidth
+                                        type="number"
+                                        id="bundleQuantity"
+                                        label="Bundle Quantity"
+                                        name="bundleQuantity"
+                                        autoComplete="bundleQuantity"
+                                        onChange = {this.onChangeQuantity}
+                                        value = {this.state.bundleQuantity}
+                                    />
+                                </Grid>
                             </Grid>
-                            <Grid item >
-                                <TextField
-                                    variant="outlined"
-                                    required
-                                    fullWidth
-                                    name="bundlePrice"
-                                    label="Bundle Price"
-                                    type="number"
-                                    id="bundlePrice"
-                                    autoComplete="bundlePrice"
-                                    onChange = {this.onChangePrice}
-                                    value = {this.state.bundlePrice}
-                                />
+                            <Grid container alignItems="center" justify="center">
+                                <Button
+                                    alignItems="center"
+                                    type="submit"
+                                    // fullWidth
+                                    variant="contained"
+                                    color="primary"
+                                    className={classes.submit}
+                                    onClick = {this.onSubmit}
+                                >
+                                    Add Product
+                                </Button>
                             </Grid>
-                            <Grid item>
-                                <TextField
-                                    variant="outlined"
-                                    required
-                                    fullWidth
-                                    type="number"
-                                    id="bundleQuantity"
-                                    label="Bundle Quantity"
-                                    name="bundleQuantity"
-                                    autoComplete="bundleQuantity"
-                                    onChange = {this.onChangeQuantity}
-                                    value = {this.state.bundleQuantity}
-                                />
-                            </Grid>
-                        </Grid>
-                        <Grid container alignItems="center" justify="center">
-                            <Button
-                                alignItems="center"
-                                type="submit"
-                                // fullWidth
-                                variant="contained"
-                                color="primary"
-                                className={classes.submit}
-                                onClick = {this.onSubmit}
-                            >
-                                Add Product
-                            </Button>
-                        </Grid>
-                        <div fullWidth style={{color: "red"}}>{this.state.error}</div>
-                        {/* <Grid container justify="flex-end">
-                            <Grid item>
-                            <Link to='/register'>
-                                <Button onClick = {this.goToRegister}>Don't have an account? Register here</Button>
-                            </Link>
-                            </Grid>
-                        </Grid> */}
-                        </form>
-                </div>
-                <div className = {classes.divider}>
-                    <Typography>YOUR PRODUCTS</Typography>
-                    <hr size="5" style={{color: 'black', display: 'block', backgroundColor: 'black'}}></hr>
-                </div>
-                <div>
-                    <Grid container spacing={3} alignItems="center" justify="center">
-                        {allProducts}
-                    </Grid>
-                    {/* <Card className={classes.root}>
-                        <CardContent>
-                            <Typography className={classes.title} color="textSecondary" gutterBottom>
-                            Word of the Day
-                            </Typography>
-                            <Typography variant="h5" component="h2">
-                            be{bull}nev{bull}o{bull}lent
-                            </Typography>
-                            <Typography className={classes.pos} color="textSecondary">
-                            adjective
-                            </Typography>
-                            <Typography variant="body2" component="p">
-                            well meaning and kindly.
-                            <br />
-                            {'"a benevolent smile"'}
-                            </Typography>
-                        </CardContent>
-                        <CardActions>
-                            <Button size="small">Learn More</Button>
-                        </CardActions>
-                    </Card> */}
-                </div>
+                            <div fullWidth style={{color: "red"}}>{this.state.error}</div>
+                            {/* <Grid container justify="flex-end">
+                                <Grid item>
+                                <Link to='/register'>
+                                    <Button onClick = {this.goToRegister}>Don't have an account? Register here</Button>
+                                </Link>
+                                </Grid>
+                            </Grid> */}
+                            </form>
+                    </div>
+                    <div style={this.state.view === 'products' ? {} : {display: 'none'}}>
+                        <VendorProductView />
+                    </div> 
+                    <div style={this.state.view === 'readyToDispatch' ? {} : {display: 'none'}}>
+                        <ReadyToDispatch />
+                    </div> 
                 </Container>
             </div>
         )

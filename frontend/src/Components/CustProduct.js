@@ -28,7 +28,7 @@ import {
     Route,
     Link
   } from "react-router-dom";
-import { Container, Card } from '@material-ui/core';
+import { Container, Card , Box} from '@material-ui/core';
 
 const styles = theme => ({
     paper: {
@@ -65,7 +65,10 @@ const styles = theme => ({
         // background: 'linear-gradient(45deg, #CE0B80 30%, #FF8E53 90%)'
     },
     card: {
-        background: 'linear-gradient(90deg, #02acbf 30%, #046c78 90%)'
+        // background: 'linear-gradient(90deg, #02acbf 30%, #046c78 90%)'
+    },
+    action: {
+        float: 'right'
     }
     // toolbar: {
     //   display: 'flex',
@@ -78,9 +81,13 @@ const styles = theme => ({
 class Product extends Component{
     constructor(){
         super()
+        this.state = {
+            quantity: 0
+        }
     }
     render(){
         const {classes} = this.props
+        const quantity = 0
         return(
             <Grid item xs={5} className={classes.divider}>
                 <Card className={classes.root, classes.card}>
@@ -88,29 +95,50 @@ class Product extends Component{
                         {/* <Typography className={classes.title} color="textSecondary" gutterBottom>
                         {this.state.data[i].productName}
                         </Typography> */}
-                        <Typography variant="h5" component="h2">
-                            {this.props.item.productName}
-                        </Typography>
-                        {/* <Typography className={classes.pos} color="textSecondary">
-                        adjective
-                        </Typography> */}
-                        <Typography variant="body2" component="p">
-                            Bundle Price: {this.props.item.bundlePrice}
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                            Bundle Quantity: {this.props.item.bundleQuantity}
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                            Items Left: {this.props.item.itemsLeft}
-                        </Typography>
+                        <Box display="flex" alignItems="center" flexDirection="row" justifyContent="space-around">
+                            <Box display="flex" alignItems="center" flexDirection="column" justifyContent="space-around">
+                                <Typography variant="h5" component="h2">
+                                    {this.props.item.productName}
+                                </Typography>
+                                {/* <Typography className={classes.pos} color="textSecondary">
+                                adjective
+                                </Typography> */}
+                                <Typography variant="body2" component="p">
+                                    Bundle Price: {this.props.item.bundlePrice}
+                                </Typography>
+                                <Typography variant="body2" component="p">
+                                    Bundle Quantity: {this.props.item.bundleQuantity}
+                                </Typography>
+                                <Typography variant="body2" component="p">
+                                    Items Left: {this.props.item.itemsLeft}
+                                </Typography>
+                            </Box>
+                            <Box display="flex" alignItems="center" flexDirection="column" justifyContent="space-around">
+                                <TextField
+                                    variant="outlined"
+                                    required
+                                    fullWidth
+                                    type="number"
+                                    id="itemQuantity"
+                                    label="Item Quantity"
+                                    name="itemQuantity"
+                                    autoComplete="itemQuantity"
+                                    // min='0'
+                                    // max={this.props.itemsLeft}
+                                    onChange = {(event) => this.props.onChangeItemQuantity(event, this.props.item._id)}
+                                    value = {this.props.itemQuantity}
+                                    // value = {quantity}
+                                />
+                            </Box>
                         {/* <Typography variant="body2" component="p">
                         well meaning and kindly.
                         <br />
                         {'"a benevolent smile"'}
                         </Typography> */}
+                        </Box>
                     </CardContent>
-                    <CardActions>
-                        <Button size="small" style={{color: "red"}} onClick = {() => {this.props.remove((this.props.item.productName))}}>{this.props.action}</Button>
+                    <CardActions className={classes.action}>
+                        <Button size="small" style={{color: "blue"}} onClick = {() => this.props.order(this.props.item.productName, this.props.item.itemsLeft, this.props.item._id)} >Place Order</Button>
                     </CardActions>
                 </Card>
             </Grid>

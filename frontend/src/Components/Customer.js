@@ -21,15 +21,27 @@ import TextField from '@material-ui/core/TextField';
 import axios from 'axios';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import CardActions from '@material-ui/core/CardActions';
+import ReactSearchBox from 'react-search-box'
 import CardContent from '@material-ui/core/CardContent';
+import SearchIcon from '@material-ui/icons/Search';
+import CloseIcon from '@material-ui/icons/Close';
+import MenuItem from '@material-ui/core/MenuItem';
+import NativeSelect from '@material-ui/core/NativeSelect';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import SortIcon from '@material-ui/icons/Sort';
+import FormControl from '@material-ui/core/FormControl';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+
 import {
     BrowserRouter as Router,
     Switch,
     Route,
     Link
   } from "react-router-dom";
-import { Container, Card } from '@material-ui/core';
-import Product from './Product.js'
+import { Container, Card, Box } from '@material-ui/core';
+import Product from './CustProduct.js'
 
 const phash = require('password-hash')
 const sha1 = require('sha1')
@@ -63,23 +75,18 @@ const styles = theme => ({
     divider: {
         margin: theme.spacing(2, 2, 2),
         padding: theme.spacing(2, 2, 2),
-        // color: 'blue'
-        // backgroundColor: '#e8e2d3',
-        // background: 'linear-gradient(45deg, #CE0B80 30%, #FF8E53 90%)'
     },
     card: {
         background: 'linear-gradient(90deg, #02acbf 30%, #046c78 90%)'
     }
-    // toolbar: {
-    //   display: 'flex',
-    //   alignItems: 'center',
-    //   flexDirection: 'row',
-    //   justifyContent: 'spaceAround'
-    // }
   });
 
 
-  class Customer extends Component{
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
+class Customer extends Component{
     static propTypes = {
         cookies: instanceOf(Cookies).isRequired
     }
@@ -97,64 +104,119 @@ const styles = theme => ({
             bundleQuantity: 0,
             userId: cookies.get('user'),
             data: [],
-            products: []
+            searchText: '',
+            products: [],
+            filter: '',
+            itemQuantity: 0,
+            itemsLeft: 0
         }
         this.onChangeProductName = this.onChangeProductName.bind(this);
         this.onChangePrice = this.onChangePrice.bind(this);
+        this.onChangeFilter = this.onChangeFilter.bind(this);
         this.onChangeQuantity = this.onChangeQuantity.bind(this);
+        this.onChangeItemQuantity = this.onChangeItemQuantity.bind(this);
+        this.onChangeSearchText = this.onChangeSearchText.bind(this);
         // this.onChangePassword = this.onChangePassword.bind(this);
         this.logOut = this.logOut.bind(this)
         this.showForm = this.showForm.bind(this)
         this.onSubmit = this.onSubmit.bind(this)
         this.fetchProducts = this.fetchProducts.bind(this)
-        this.removeProduct = this.removeProduct.bind(this)
-    }
-    removeProduct(productName){
-        const {cookies} = this.props
-        const product = {
-            productName: productName,
-            userId: cookies.get('user')
-        }
-        var post = axios.post('http://localhost:4000/removeProduct', product)
-        .then(res => {
-            console.log(res.data)
-            // window.location.reload()
-            this.fetchProducts()
-        })
+        this.createProducts = this.createProducts.bind(this)
+        this.orderProduct = this.orderProduct.bind(this)
     }
     componentDidMount(){
         this.fetchProducts()
         .then(res => {
-            // this.setState({
-            //     data: res.body,
-            // })
         })
         .catch(err => console.log(err))
-        // this.showProducts()
-        // console.log(this.products)
     }
     
+    createProducts(){
+        if(this.state.searchText === ''){
+            console.log(this.state.data)
+            this.setState({
+                products: this.state.data
+            })
+            console.log(this.state.products)
+        }
+        else{
+            var p = []
+            for(let i=0; i<this.state.data.length; i++){
+                if(this.state.data[i].productName.toLowerCase().includes(this.state.searchText)){
+                    p.push(this.state.data[i])
+                }
+            }
+            this.setState({
+                products: p
+            })
+        }
+    }
     fetchProducts = async() => {
         const {cookies} = this.props
-        // const product = {
-        //     userId: cookies.get('user')
-        // }
-        var post = axios.get('http://localhost:4000/allProducts')
+        console.log('hello')
+        console.log(this.state.searchText)
+        const product = {
+            productName: this.state.searchText,
+            filter: this.state.filter
+        }
+        var post = axios.post('http://localhost:4000/searchProducts', product)
         .then(res => {
             console.log(res.data.length)
+            console.log(res.data)
             this.setState({
                 data: res.data
             })
+            console.log(this.state.data)
         })
-        this.showProducts()
         return 
     }
 
+    orderProduct(productName, availabul, id){
+        console.log("ahsdfjhasljkdhf", productName)
+        const {cookies} = this.props
+        console.log('wow')
+        console.log(this.state[id])
+        console.log(availabul)
+        console.log(this.state.itemQuantity)
+        if(this.state[id] > availabul){
+            console.log('fjslfsj')
+            this.setState({invalidOrder: true})
+        }
+        else{
+            const order = {
+                userId: cookies.get('user'),
+                itemQuantity: this.state[id],
+                itemsLeft: availabul - this.state[id],
+                productId: id
+            }
+            axios.post('http://localhost:4000/placeOrder', order)
+            .then(res => {
+                console.log(res)
+            })
+            this.setState({order: true})
+            this.fetchProducts()
+            // window.location.reload()
+        }
+    }
+
+    onChangeSearchText(event) {
+        this.setState({ searchText: event.target.value });
+    }
+    onChangeFilter(event) {
+        this.setState({ filter: event.target.value });
+        console.log(this.state.filter)
+    }
     onChangeProductName(event) {
         this.setState({ productName: event.target.value });
     }
     onChangePrice(event) {
         this.setState({ bundlePrice: event.target.value });
+    }
+    onChangeItemQuantity(event, id) {
+        console.log(event.target.value)
+        this.setState({ [id]: event.target.value }, () => {
+            console.log(this.state)
+        });
     }
     onChangeQuantity(event) {
         this.setState({ bundleQuantity: event.target.value });
@@ -178,7 +240,6 @@ const styles = theme => ({
         cookies.remove('loggedIn')
         cookies.remove('customer')
         cookies.remove('vendor')
-        // this.props.history.push('/')
         window.location.reload()
     }
     onSubmit(e) {
@@ -188,9 +249,7 @@ const styles = theme => ({
             userId: this.state.userId,
             productName: this.state.productName,
             bundlePrice: this.state.bundlePrice,
-            // passwordHash: sha1(this.state.password+'secret'),
             bundleQuantity: this.state.bundleQuantity,
-            // type: this.state.type
         }
         if(newProduct['productName'] !== '' && newProduct['bundlePrice'] != 0 && newProduct['bundleQuantity'] != 0)
         {
@@ -203,19 +262,6 @@ const styles = theme => ({
                 this.setState({
                     error: res.data,
                 })
-            //   if(res.data == 'user added'){
-            //     cookies.set('loggedIn', true)
-            //     if(this.state.type == 'customer'){
-            //       cookies.set('customer', true)
-            //       cookies.set('vendor', false)
-            //     }
-            //     else{
-            //       cookies.set('customer', false)
-            //       cookies.set('vendor', true)
-            //     }
-            //     this.props.history.push('/')
-            //     window.location.reload()
-            //   }
             });
             this.setState({
                 productName: '',
@@ -239,21 +285,14 @@ const styles = theme => ({
     }
     render(){
         const {classes} = this.props
-        const bull = <span className={classes.bullet}>•</span>;
-        const allProducts = this.state.data.map(product => <Product key = {product._id} item = {product} remove = {this.removeProduct}/>)
+        const allProducts = this.state.data.map(product => <Product key = {product._id} item = {product} order = {this.orderProduct} onChangeItemQuantity = {this.onChangeItemQuantity}/>)
         return(
             <div>
                 <AppBar position="static">
                     <Toolbar>
-                    {/* <IconButton edge="start" color="red" aria-label="menu">
-                        <MenuIcon /> */}
-                    {/* </IconButton> */}
                     <Typography variant="h6" className={classes.title} style={{flex: 1}}>
                         Home
                     </Typography>
-                    {/* <Link>
-                        <Button color="black" className='float-right' onClick = {this.showForm}>ADD NEW PRODUCT</Button>
-                    </Link> */}
                     <Link>
                         <Button color="inherit" className='float-right' onClick = {this.logOut}>Sign Out</Button>
                     </Link>
@@ -320,50 +359,81 @@ const styles = theme => ({
                             </Button>
                         </Grid>
                         <div fullWidth style={{color: "red"}}>{this.state.error}</div>
-                        {/* <Grid container justify="flex-end">
-                            <Grid item>
-                            <Link to='/register'>
-                                <Button onClick = {this.goToRegister}>Don't have an account? Register here</Button>
-                            </Link>
-                            </Grid>
-                        </Grid> */}
                         </form>
                 </div>
                 <div className = {classes.divider}>
-                    <Typography>All PRODUCTS</Typography>
+                    <Box display="flex" flex="row" alignItems="center" justifyContent="space-between">
+                        <Typography>All PRODUCTS</Typography>
+                        <Box width="60%" display="flex" flexDirection="row" alignItems="center" justifyContent="space-around">
+                            <TextField
+                                style={{width: '60%'}}
+                                required
+                                type="text"
+                                id="searchText"
+                                name="searchText"
+                                autoComplete="searchText"
+                                onChange = {this.onChangeSearchText}
+                                value = {this.state.searchText}
+                             />
+                            <IconButton>
+                                <SearchIcon onClick={this.fetchProducts} />
+                            </IconButton>
+                                <InputLabel shrink id="demo-simple-select-placeholder-label-label">
+                                Sort By
+                                </InputLabel>
+                                <NativeSelect
+                                    value={this.state.filter}
+                                    onChange={this.onChangeFilter}
+                                >
+                                    <option value="">None</option>
+                                    <option value='bundlePrice'>By Price</option>
+                                    <option value='ratings'>By Ratings</option>
+                                    <option value='itemsLeft'>By Quantity</option>
+                                </NativeSelect>
+
+                                <IconButton>
+                                    <SortIcon onClick={this.fetchProducts} />
+                                </IconButton>
+
+                        </Box>
+                    </Box>
                     <hr size="5" style={{color: 'black', display: 'block', backgroundColor: 'black'}}></hr>
                 </div>
                 <div>
                     <Grid container spacing={3} alignItems="center" justify="center">
-                        {/* {this.state.products} */}
-                        {/* {this.showProducts()} */}
                         {allProducts}
                     </Grid>
-                    {/* <Card className={classes.root}>
-                        <CardContent>
-                            <Typography className={classes.title} color="textSecondary" gutterBottom>
-                            Word of the Day
-                            </Typography>
-                            <Typography variant="h5" component="h2">
-                            be{bull}nev{bull}o{bull}lent
-                            </Typography>
-                            <Typography className={classes.pos} color="textSecondary">
-                            adjective
-                            </Typography>
-                            <Typography variant="body2" component="p">
-                            well meaning and kindly.
-                            <br />
-                            {'"a benevolent smile"'}
-                            </Typography>
-                        </CardContent>
-                        <CardActions>
-                            <Button size="small">Learn More</Button>
-                        </CardActions>
-                    </Card> */}
                 </div>
                 </Container>
+                <Snackbar
+                    anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                    }}
+                    open={this.state.order}
+                    autoHideDuration={6000}
+                    onClose={() => {this.setState({order: false})}}
+                    message="Order Placed"
+                >
+                    <Alert onClose={() => {this.setState({order: false})}} severity="success">
+                        Order placed succesfully!!!
+                    </Alert>
+                </Snackbar>
+                <Snackbar
+                    anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                    }}
+                    open={this.state.invalidOrder}
+                    autoHideDuration={6000}
+                    onClose={() => {this.setState({invalidOrder: false})}}
+                >
+                    <Alert onClose={() => {this.setState({invalidOrder: false})}} severity="error">
+                        Such an order is not possible!!!
+                    </Alert>
+                </Snackbar>
             </div>
         )
     }
-  }
-  export default withCookies(withStyles(styles)(Customer));
+}
+export default withCookies(withStyles(styles)(Customer));

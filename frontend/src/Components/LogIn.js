@@ -142,7 +142,6 @@ class LogIn extends Component{
                 })
                 return res.data.firstName
             });
-        // console.log(post)
     }
     else
     {
@@ -158,7 +157,6 @@ class LogIn extends Component{
   }
   render(){
     const { classes } = this.props;
-    // const {history} = this.props;
   return (
       <Router>
     <Container>
@@ -199,6 +197,7 @@ class LogIn extends Component{
                 autoComplete="email"
                 onChange = {this.onChangeEmail}
                 value = {this.state.email}
+                autoFocus
               />
             </Grid>
             <Grid item xs={12}>
@@ -215,12 +214,6 @@ class LogIn extends Component{
                 value = {this.state.password}
               />
             </Grid>
-            {/* <Grid item xs={12}>
-              <FormControlLabel
-                control={<Checkbox value="allowExtraEmails" color="primary" />}
-                label="I want to receive inspiration, marketing promotions and updates via email."
-              />
-            </Grid> */}
           </Grid>
           <Button
             type="submit"

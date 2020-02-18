@@ -6,9 +6,13 @@ var ProductSchema = new Schema(
     	userId: String,
     	productName: String,
     	bundlePrice: Number,
-    	bundleQuantity: Number
+    	bundleQuantity: Number,
+    	itemsLeft: Number,
+    	readyToDispatch: Boolean,
+    	dispatched: Boolean
     },
     { collection: 'products'}
 )
+
 
 module.exports = mongoose.model('Product', ProductSchema)
