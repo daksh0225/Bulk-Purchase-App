@@ -115,7 +115,7 @@ const styles = theme => ({
             productName: productName,
             userId: cookies.get('user')
         }
-        var post = axios.post('http://localhost:4000/removeProduct', product)
+        var post = axios.post('http://localhost:4000/dispatchProduct', product)
         .then(res => {
             console.log(res.data)
             // window.location.reload()
@@ -139,7 +139,7 @@ const styles = theme => ({
         const product = {
             userId: cookies.get('user')
         }
-        var post = axios.post('http://localhost:4000/readyProducts', product)
+        var post = axios.post('http://localhost:4000/dispatchProduct', product)
         .then(res => {
             console.log(res.data.length)
             this.setState({

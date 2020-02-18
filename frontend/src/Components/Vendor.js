@@ -216,7 +216,7 @@ const styles = theme => ({
                         <Button color="inherit" className='float-right' onClick = {() => this.changeView('readyToDispatch')}>Ready to Dispatch</Button>
                     </span>
                     <span style={this.state.view ==='readyToDispatch' ? {} : {display: 'none'}}>
-                        <Button color="inherit" className='float-right' onClick = {() => this.changeView('products')}>See All Products</Button>
+                        <Button color="inherit" className='float-right' onClick = {() => this.changeView('products')}>See Available Products</Button>
                     </span>
                     {/* </Link> */}
                     <Button color="inherit" className='float-right' onClick = {this.logOut}>Sign Out</Button>

@@ -70,7 +70,7 @@ routes.route('/searchProducts').post(function(req, res) {
     const {name, filter} = req.body
     if(req.body.productName === ''){
         console.log('all')
-            Query.find({'readyToDispatch': false, 'dispatched': false}, null, {sort: filter}, function(err, users) {
+            Query.find({'readyToDispatch': false, 'dispatched': false}, null, {sort: req.body.filter}, function(err, users) {
                 if (err) {
                     console.log(err);
                 } else {
@@ -81,13 +81,96 @@ routes.route('/searchProducts').post(function(req, res) {
             });
     }
     else{
-        Searcher.find({'productName': req.body.productName}, 'productName bundlePrice bundleQuantity', {sort: req.body.filter},     function(err, products) {
+        Searcher.find({'productName': req.body.productName, 'readyToDispatch': false, 'dispatched': false}, null, {sort: req.body.filter},     function(err, products) {
             if (err) {
                 console.log(err);
             } else {
                 console.log('sending response')
                 // console.log(products)
                 res.json(products);
+            }
+        });
+    }
+});
+
+routes.route('/getOrders').post(function(req, res) {
+    var placedOrder = []
+    console.log(req.body)
+    const {user, productName, filter} = req.body
+    console.log('getting orders')
+    console.log(req.body.userId)
+    var status = ''
+    if(req.body.productName === ''){
+        console.log('all')
+            Order.find({'userId': req.body.userId}, null, {sort: req.body.filter}, function(err, orders) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    // console.log('sending respo')
+                    // // console.log(orders)
+                    for(let i = 0; i<orders.length; i++){
+                    //     console.log(orders[i].productId)
+                    //     // console.log(orders[i].userId)
+                        Product.findOne({'_id': orders[i].productId}, '', function(err, product){
+                    //         if(err){
+                    //             console.log(err)
+                    //         }
+                    //         else{
+                                // console.log(product)
+                            if(product){
+                                orders[i].set('itemsLeft', product.itemsLeft)
+                                if(product.itemsLeft > 0){
+                                    status = 'waiting'
+                                }
+                                else{
+                                    if(product.readyToDispatch == true){
+                                        status = 'placed'
+                                    }
+                                    else{
+                                        status = 'dispatched'
+                                    }
+                                }
+                                const order = {
+                                    'userId': orders[i].userId,
+                                    'productId': orders[i].productId,
+                                    'productName': orders[i].productName,
+                                    'itemsLeft': product.itemsLeft,
+                                    'itemQuantity': orders[i].itemQuantity,
+                                    'status': status
+                                }
+                                // console.log(order)
+                                placedOrder.push(order)
+                                // console.log(placedOrder)
+                            }
+                            else{
+                                const order = {
+                                    'userId': orders[i].userId,
+                                    'productId': orders[i].productId,
+                                    'productName': orders[i].productName,
+                                    'itemsLeft': -1,
+                                    'itemQuantity': orders[i].itemQuantity,
+                                    'status': 'canceled'
+                                } 
+                            }
+                            if(i==orders.length -1 ){
+                                console.log(placedOrder)
+                                res.send(placedOrder);
+                            }
+                    //         }
+                        })
+                        // console.log(orders[i].itemsLeft)
+                    }
+                }
+            });
+    }
+    else{
+        Order.find({'userId': req.body.userId, 'productName': req.body.productName}, null, {sort: req.body.filter},     function(err, orders) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log('sending response')
+                // console.log(products)
+                res.json(orders);
             }
         });
     }
@@ -140,6 +223,7 @@ routes.route('/placeOrder').post(function(req, res) {
         order.save()
         .then(res => {
                 console.log('order placed')
+                console.log(res)
         });
     }
     else{
@@ -154,6 +238,7 @@ routes.route('/placeOrder').post(function(req, res) {
         order.save()
         .then(res => {
                 console.log('order placed')
+                console.log(res)
         });
     }
 })

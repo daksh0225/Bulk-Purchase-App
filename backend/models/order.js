@@ -5,6 +5,7 @@ var OrderSchema = new Schema(
     {
     	userId: String,
     	productId: String,
+    	productName: String,
     	itemQuantity: Number,
     },
     { collection: 'orders'}
