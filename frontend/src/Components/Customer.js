@@ -105,7 +105,7 @@ class Customer extends Component{
             bundlePrice: 0,
             bundleQuantity: 0,
             userId: cookies.get('user'),
-            data: [],
+            orders: [],
             searchText: '',
             products: [],
             filter: '',
@@ -115,11 +115,15 @@ class Customer extends Component{
         }
         this.logOut = this.logOut.bind(this)
         this.fetchProducts = this.fetchProducts.bind(this)
+        this.getOrders = this.getOrders.bind(this)
         this.changeView = this.changeView.bind(this)
         this.onChangeSearchText = this.onChangeSearchText.bind(this)
         this.onChangeFilter = this.onChangeFilter.bind(this)
     }
-
+    componentDidMount(){
+        this.fetchProducts()
+        this.getOrders()
+    }
     onChangeSearchText(event) {
         this.setState({ searchText: event.target.value }, () => {
             console.log(this.state.searchText)
@@ -133,6 +137,25 @@ class Customer extends Component{
         const {cookies} = this.props
         console.log('hello')
         console.log(this.state.searchText)
+        const product = {
+            productName: this.state.searchText,
+            filter: this.state.filter
+        }
+        var post = axios.post('http://localhost:4000/searchProducts', product)
+        .then(res => {
+            console.log(res.data.length)
+            console.log(res.data)
+            this.setState({
+                products: res.data
+            })
+            console.log(this.state.data)
+        })
+        return 
+    }
+    getOrders = async() => {
+        const {cookies} = this.props
+        console.log('hello')
+        console.log(this.state.searchText)
         const order = {
             userId: cookies.get('user'),
             productName: this.state.searchText,
@@ -143,7 +166,7 @@ class Customer extends Component{
             console.log(res.data.length)
             console.log(res.data)
             this.setState({
-                data: res.data
+                orders: res.data
             }, () => {
                 console.log(this.state.data, 'ejlhef;')
             })
@@ -156,6 +179,7 @@ class Customer extends Component{
             view: view
         })
         this.fetchProducts()
+        this.getOrders()
         console.log(this.state.view)
     }
     logOut(){
@@ -181,15 +205,25 @@ class Customer extends Component{
                     <span style={this.state.view ==='orders' ? {} : {display: 'none'}}>
                         <Button color="inherit" className='float-right' onClick = {() => this.changeView('products')}>See All Products</Button>
                     </span>
+                    {/* <Link to='/orders'>
+                        <span style={this.state.view ==='products' ? {} : {display: 'none'}}>
+                            <Button color="inherit" className='float-right' onClick = {() => this.changeView('orders')}>Your Orders</Button>
+                        </span>
+                    </Link>
+                    <Link to='/'>
+                        <span style={this.state.view ==='orders' ? {} : {display: 'none'}}>
+                            <Button color="inherit" className='float-right' onClick = {() => this.changeView('products')}>See All Products</Button>
+                        </span>
+                    </Link> */}
                     <Button color="inherit" className='float-right' onClick = {this.logOut}>Sign Out</Button>
                     </Toolbar>
                 </AppBar>
                 <Container>
                     <div style={this.state.view === 'products' ? {} : {display: 'none'}}>
-                        <CustomerProductView data = {this.state.data} fetch = {this.fetchProducts} onChangeSearchText = {this.onChangeSearchText} />
+                        <CustomerProductView data = {this.state.products} fetchProducts = {this.fetchProducts} onChangeSearchText = {this.onChangeSearchText} onChangeFilter = {this.onChangeFilter} />
                     </div> 
                     <div style={this.state.view === 'orders' ? {} : {display: 'none'}}>
-                        <CustomerOrders data = {this.state.data} fetchProducts = {this.fetchProducts} onChangeSearchText = {this.onChangeSearchText} onChangeFilter = {this.onChangeFilter} />
+                        <CustomerOrders data = {this.state.orders} getOrders = {this.getOrders} onChangeSearchText = {this.onChangeSearchText} onChangeFilter = {this.onChangeFilter} />
                     </div> 
                 </Container>
                 {/* <Container>

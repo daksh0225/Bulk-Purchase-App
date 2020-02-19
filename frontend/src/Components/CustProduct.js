@@ -25,6 +25,13 @@ import CardContent from '@material-ui/core/CardContent';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
+import CancelIcon from '@material-ui/icons/Cancel';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import {
     BrowserRouter as Router,
     Switch,
@@ -100,8 +107,12 @@ class Product extends Component{
         super()
         this.state = {
             quantity: 0,
-            statusIndex: 0
-        }
+            statusIndex: 0,
+            reviewShow: false,
+            data: []
+       }
+       this.hideReview = this.hideReview.bind(this)
+       this.showReviews = this.showReviews.bind(this)
     }
     componentDidMount(){
         if(this.props.status === 'waiting'){
@@ -114,12 +125,35 @@ class Product extends Component{
             this.setState({statusIndex: 2})
         }
     }
+    hideReview(){
+        this.setState({reviewShow: false})
+    }
+    showReviews(userId, productName){
+        const query = {
+            userId: userId,
+            productName: productName
+        }
+        axios.post('http://localhost:4000/getReviews', query)
+        .then(res => {
+            this.setState({
+                data: res.data.reviews
+            }, () => {
+                console.log(this.state.data)
+            })
+        })
+        this.setState({reviewShow: true})
+    }
+
     render(){
         const {classes} = this.props
         const steps = getSteps()
         var activeStep = 0
-        if(this.props.item.status === 'waiting') activeStep = 0
-        else if(this.props.item.status === 'placed') activeStep = 1
+        const reviews = this.state.data.map((rr, index) => 
+            <p>{rr}</p>
+        )
+        console.log(this.props.item.status)
+        if(this.props.item.status === 'waiting') activeStep = 1
+        else if(this.props.item.status === 'placed') activeStep = 2
         else if(this.props.item.status === 'dispatched') activeStep = 3
         return(
             <Grid item xs={5} className={classes.divider}>
@@ -146,6 +180,9 @@ class Product extends Component{
                                     <Typography variant="body2" component="p">
                                         Items Left: {this.props.item.itemsLeft}
                                     </Typography>
+                                    <Typography variant="body2" component="p">
+                                        Vendor: <Button onClick = {() => this.showReviews(this.props.item.userId, this.props.item.productName)}>{this.props.item.vendorName}</Button>
+                                    </Typography>
                                 </Box>
                                 <Box display="flex" alignItems="center" flexDirection="column" justifyContent="space-around">
                                     <TextField
@@ -165,6 +202,31 @@ class Product extends Component{
                                     />
                                 </Box>
                             </Box>
+                            <Dialog open={this.state.reviewShow} onClose={() => this.hideReview()} aria-labelledby="form-dialog-title">
+                                <DialogTitle id="form-dialog-title">Review</DialogTitle>
+                                <DialogContent>
+                                <DialogContentText>
+                                    Customer Reviews for this product
+                                </DialogContentText>
+                                {reviews}
+                                {/* <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="name"
+                                    label="Write a Review"
+                                    type="text"
+                                    value = {this.props.reviewText}
+                                    onChange = {this.props.onChangeReview}
+                                    fullWidth
+                                /> */}
+
+                                </DialogContent>
+                                <DialogActions>
+                                <Button onClick={() => this.hideReview()} color="primary">
+                                    Close
+                                </Button>
+                                </DialogActions>
+                            </Dialog>
                         </div>
 
                         <div style={this.props.type === 'orders' ? {} : {display: 'none'}}>
@@ -189,7 +251,7 @@ class Product extends Component{
                                     </Typography>
                                 </Box>
                                 <div display='flex' flexDirection='column' alignItems="center" justifyContent="space-evenly">
-                                    <div className={classes.root}>
+                                    <div className={classes.root}style={this.props.item.status !== 'canceled' ? {} : {display: 'none'}} >
                                         <Stepper activeStep={activeStep} alternativeLabel>
                                             {steps.map(label => (
                                             <Step key={label}>
@@ -200,6 +262,12 @@ class Product extends Component{
                                                 <StepLabel>wowo</StepLabel>
                                             </Step> */}
                                         </Stepper>
+                                    </div>
+                                    <div className={classes.root} style={this.props.item.status === 'canceled' ? {} : {display: 'none'}}>
+                                        <CancelIcon style={{color:"red"}}></CancelIcon>
+                                        <Step>
+                                            <StepLabel>Canceled</StepLabel>
+                                        </Step>
                                     </div>
                                     <div style={this.props.item.status === 'waiting' ? {} : {display: 'none'}}>
                                         <Box display="flex" alignItems="center" flexDirection="column" justifyContent="space-around">
@@ -222,6 +290,32 @@ class Product extends Component{
                                     </div>
                                 </div>
                             </Box>
+                            <Dialog open={this.props.review} onClose={() => this.props.changeReview()} aria-labelledby="form-dialog-title">
+                                <DialogTitle id="form-dialog-title">Review</DialogTitle>
+                                <DialogContent>
+                                {/* <DialogContentText>
+                                    Write a review for this product
+                                </DialogContentText> */}
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="name"
+                                    label="Write a Review"
+                                    type="text"
+                                    value = {this.props.reviewText}
+                                    onChange = {this.props.onChangeReview}
+                                    fullWidth
+                                />
+                                </DialogContent>
+                                <DialogActions>
+                                <Button onClick={() => this.props.changeReview()} color="primary">
+                                    Cancel
+                                </Button>
+                                <Button onClick={() => this.props.saveReview(this.props.item.productName, this.props.item.vendorId)} color="primary">
+                                    Submit
+                                </Button>
+                                </DialogActions>
+                            </Dialog>
                         </div>
                     </CardContent>
                     <CardActions className={classes.action}>
@@ -230,6 +324,9 @@ class Product extends Component{
                         </span>
                         <span style = {this.props.type === 'orders' && this.props.item.status === 'waiting'? {} : {display: 'none'}}>
                             <Button size="small" style={{color: "blue"}} onClick = {() => this.props.order(this.props.item.orderId, this.props.item.productName, this.props.item.itemsLeft, this.props.item._id, this.props.item.itemQuantity)} >Edit Order</Button>
+                        </span>
+                        <span style = {this.props.type === 'orders' && this.props.item.status === 'dispatched'? {} : {display: 'none'}}>
+                            <Button size="small" style={{color: "blue"}} onClick = {() => this.props.changeReview()} >Give Review</Button>
                         </span>
                     </CardActions>
                 </Card>

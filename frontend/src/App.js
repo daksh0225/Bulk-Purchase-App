@@ -22,6 +22,7 @@ import {
   Route,
   Link
 } from "react-router-dom";
+import CustomerOrders from './Components/CustomerOrders.js'
 import { useHistory } from 'react-router-dom';
 // function App() {
 //   return (
@@ -114,6 +115,7 @@ function App(props){
             {/* <Register /> */}
           </Route>
           <Route path="/login" component={LogIn} />
+          {/* <Route path="/orders" component={CustomerOrders} /> */}
           {/* <Route path="/dashboard">
             <Dashboard />
           </Route> */}

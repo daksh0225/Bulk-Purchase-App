@@ -32,7 +32,7 @@ import { Container, Card } from '@material-ui/core';
 import Product from './Product.js'
 import VendorProductView from './VendorProductView.js';
 import ReadyToDispatch from './readyToDispatch.js';
-
+import VendorDispatchedView from './dispatched.js'
 const phash = require('password-hash')
 const sha1 = require('sha1')
 const styles = theme => ({
@@ -334,6 +334,9 @@ const styles = theme => ({
                     <div style={this.state.view === 'readyToDispatch' ? {} : {display: 'none'}}>
                         <ReadyToDispatch data = {this.state.data} fetchProducts = {this.fetchProducts}/>
                     </div> 
+                    <div style={this.state.view === 'dispatched' ? {} : {display: 'none'}}>
+                        <VendorDispatchedView />
+                    </div>
                 </Container>
             </div>
         )

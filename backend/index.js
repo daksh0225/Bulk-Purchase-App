@@ -14,6 +14,7 @@ let Query = require('./models/query')
 let Remover = require('./models/removeProduct')
 let Searcher = require('./models/searchProduct')
 let Order = require('./models/order')
+let Review = require('./models/review')
 app.use(cors()) 
 app.use(bodyParser.json())
 
@@ -65,34 +66,136 @@ routes.route('/searchProducts').post(function(req, res) {
     console.log('fetching products')
     console.log(req.body.productName)
     console.log(req.body.filter)
+    var pp = []
     // let query = Query(req.body)
     // if(req.body.filter === 'itemsLeft')
     const {name, filter} = req.body
     if(req.body.productName === ''){
         console.log('all')
-            Query.find({'readyToDispatch': false, 'dispatched': false}, null, {sort: req.body.filter}, function(err, users) {
+            Product.find({'readyToDispatch': false, 'dispatched': false, 'removed': false}, null, {sort: req.body.filter}, function(err, products) {
                 if (err) {
                     console.log(err);
                 } else {
                     console.log('sending response')
-                    console.log(users)
-                    res.json(users);
+                    console.log('fsfsf')
+                    let done = 0
+                    for(let i = 0; i<products.length; i++){
+                        User.findOne({'_id': products[i].userId}, '', function(err, user){
+                            if(user){
+                                const p = {
+                                    '_id': products[i]._id,
+                                    'userId': products[i].userId,
+                                    'vendorName': user.firstName + ' ' + user.lastName,
+                                    'productName': products[i].productName,
+                                    'bundlePrice': products[i].bundlePrice,
+                                    'bundleQuantity': products[i].bundleQuantity,
+                                    'itemsLeft': products[i].itemsLeft,
+                                    'readyToDispatch': products[i].readyToDispatch,
+                                    'dispatched': products[i].dispatched,
+                                    'removed': products[i].removed
+                                }
+                                // console.log(order)
+                                pp.push(p)
+                                // console.log(placedOrder)
+                            }
+                            done++
+                            if(done==products.length){
+                                console.log(pp)
+                                res.send(pp);
+                            }
+                    //         }
+                        })
+                        // console.log(orders[i].itemsLeft)
+                    }
+                    // res.json(users);
                 }
             });
     }
     else{
-        Searcher.find({'productName': req.body.productName, 'readyToDispatch': false, 'dispatched': false}, null, {sort: req.body.filter}, function(err, products) {
+        Product.find({'productName': req.body.productName, 'readyToDispatch': false, 'dispatched': false, 'removed': false}, null, {sort: req.body.filter}, function(err, products) {
             if (err) {
                 console.log(err);
             } else {
                 console.log('sending response')
                 // console.log(products)
-                res.json(products);
+                let done = 0
+                for(let i = 0; i<products.length; i++){
+                    User.findOne({'_id': products[i].userId}, '', function(err, user){
+                        if(user){
+                            const p = {
+                                '_id': products[i]._id,
+                                'userId': products[i].userId,
+                                'vendorName': user.firstName + user.lastName,
+                                'productName': products[i].productName,
+                                'bundlePrice': products[i].bundlePrice,
+                                'bundleQuantity': products[i].bundleQuantity,
+                                'itemsLeft': products[i].itemsLeft,
+                                'readyToDispatch': products[i].readyToDispatch,
+                                'dispatched': products[i].dispatched,
+                                'removed': products[i].removed
+                            }
+                            // console.log(order)
+                            pp.push(p)
+                            // console.log(placedOrder)
+                        }
+                        done++
+                        if(done==products.length){
+                            console.log(pp)
+                            res.send(pp);
+                        }
+                //         }
+                    })
+                    // console.log(orders[i].itemsLeft)
+                }
+                // res.json(pp);
             }
         });
     }
 });
 
+routes.route('/dispatchedProucts').post(function(req, res){
+    consle.log('fetching dispatched')
+    console.log(req.body)
+    pp = []
+    Product.find({'userId': req.body.userId}, '', function(err, products){
+        if(err){
+            console.log(err)
+        }
+        else{
+            let done = 0
+            for(let i = 0; i<products.length; i++){
+                Review.findOne({'userId': req.body.userId, 'productName': products[i].productName, 'dispatched': true, 'removed': false}, '', function(err, review){
+                    const p = {
+                        'userId': req.body.userId,
+                        'productName': products[i].productName,
+                        'bundlePrice': products[i].bundlePrice,
+                        'bundleQuantity': products[i].bundleQuantity,
+                        'itemsLeft': products[i].itemsLeft,
+                        'readyToDispatch': products[i].readyToDispatch,
+                        'dispatched': products[i].dispatched,
+                        'removed': products[i].removed,
+                        'reviews': review.reviews
+                    }
+                    pp.push(p)
+                })
+                done++
+                if(done == products.length){
+                    res.json(pp)
+                }
+            }
+        }
+    })
+})
+routes.route('/getReviews').post(function(req, res){
+    console.log(req.body)
+    Review.findOne({'userId': req.body.userId, 'productName': req.body.productName}, 'reviews', function(err, review){
+        if(err) console.log(err)
+        if(review){
+            console.log(review)
+            res.json(review)
+        }
+    })
+})
 routes.route('/getOrders').post(function(req, res) {
     var placedOrder = []
     console.log(req.body)
@@ -105,9 +208,11 @@ routes.route('/getOrders').post(function(req, res) {
         Order.find({'userId': req.body.userId}, null, {sort: req.body.filter}, function(err, orders) {
             if (err) {
                 console.log(err);
-            } else {
+            } 
+            if(orders){
                 // console.log('sending respo')
                 // // console.log(orders)
+                let done = 0
                 for(let i = 0; i<orders.length; i++){
                 //     console.log(orders[i].productId)
                 //     // console.log(orders[i].userId)
@@ -119,7 +224,11 @@ routes.route('/getOrders').post(function(req, res) {
                             // console.log(product)
                         if(product){
                             orders[i].set('itemsLeft', product.itemsLeft)
-                            if(product.itemsLeft > 0){
+                            if(product.removed == true){
+                                console.log('hoooo')
+                                status = 'canceled'
+                            }
+                            else if(product.itemsLeft > 0){
                                 status = 'waiting'
                             }
                             else{
@@ -132,6 +241,7 @@ routes.route('/getOrders').post(function(req, res) {
                             }
                             const order = {
                                 '_id': product._id,
+                                'vendorId': product.userId,
                                 'userId': orders[i].userId,
                                 'productId': orders[i].productId,
                                 'productName': orders[i].productName,
@@ -144,19 +254,8 @@ routes.route('/getOrders').post(function(req, res) {
                             placedOrder.push(order)
                             // console.log(placedOrder)
                         }
-                        else{
-                            const order = {
-                                '_id': product._id,
-                                'userId': orders[i].userId,
-                                'productId': orders[i].productId,
-                                'productName': orders[i].productName,
-                                'itemsLeft': -1,
-                                'itemQuantity': orders[i].itemQuantity,
-                                'status': 'canceled',
-                                'orderId': orders[i]._id
-                            } 
-                        }
-                        if(i==orders.length -1 ){
+                        done++
+                        if(done==orders.length){
                             console.log(placedOrder)
                             res.send(placedOrder);
                         }
@@ -165,15 +264,24 @@ routes.route('/getOrders').post(function(req, res) {
                     // console.log(orders[i].itemsLeft)
                 }
             }
+            else{
+                res.send()
+            }
         });
     }
     else{
+        console.log(req.body.productName)
         Order.find({'userId': req.body.userId, 'productName': req.body.productName}, '', {sort: req.body.filter},     function(err, orders) {
         if (err) {
                 console.log(err);
-            } else {
+            }
+            if(orders.length == 0) {
+                            res.send([])
+                        }
+        if(orders) {
                 // console.log('sending respo')
                 // // console.log(orders)
+                let done = 0
                 for(let i = 0; i<orders.length; i++){
                 //     console.log(orders[i].productId)
                 //     // console.log(orders[i].userId)
@@ -183,13 +291,17 @@ routes.route('/getOrders').post(function(req, res) {
                 //         }
                 //         else{
                             // console.log(product)
+
                         if(product){
                             orders[i].set('itemsLeft', product.itemsLeft)
                             if(product.itemsLeft > 0){
                                 status = 'waiting'
                             }
                             else{
-                                if(product.dispatched == true){
+                                if(product.removed == true){
+                                    status = 'canceled'
+                                }
+                                else if(product.dispatched == true){
                                     status = 'dispatched'
                                 }
                                 else if(product.readyToDispatch == true){
@@ -210,19 +322,8 @@ routes.route('/getOrders').post(function(req, res) {
                             placedOrder.push(order)
                             // console.log(placedOrder)
                         }
-                        else{
-                            const order = {
-                                '_id': product._id,
-                                'userId': orders[i].userId,
-                                'productId': orders[i].productId,
-                                'productName': orders[i].productName,
-                                'itemsLeft': -1,
-                                'itemQuantity': orders[i].itemQuantity,
-                                'status': 'canceled',
-                                'orderId': orders[i]._id
-                            }
-                        }
-                        if(i==orders.length -1 ){
+                        done++
+                        if(done==orders.length ){
                             console.log(placedOrder)
                             res.send(placedOrder);
                         }
@@ -230,6 +331,9 @@ routes.route('/getOrders').post(function(req, res) {
                     })
                     // console.log(orders[i].itemsLeft)
                 }
+            }
+            else{
+                res.send({'userId': 'hello'})
             }
         });
     }
@@ -301,6 +405,44 @@ routes.route('/placeOrder').post(function(req, res) {
                 console.log(res)
         });
     }
+})
+
+routes.route('/saveReview').post(function(req, res) {
+    console.log('saving review')
+    // console.log(req.body.userId)
+    // console.log(req.body.productId)
+    // itemsLeft = req.body.itemsLeft
+    // if(itemsLeft == 0){
+    console.log(req.body)
+    Review.findOneAndUpdate({'productName': req.body.productName, 'userId': req.body.vendorId}, {$push : {reviews: req.body.review}}, function(err, review){
+        if(err){
+            console.log(err)
+        }
+        else{
+            console.log('wo woo')
+        }
+    })
+    //     order.save()
+    //     .then(res => {
+    //             console.log('order placed')
+    //             console.log(res)
+    //     });
+    // }
+    // else{
+    //     Product.findByIdAndUpdate({'_id': req.body.productId}, {'itemsLeft': itemsLeft}, function(err, product){
+    //         if(err){
+    //             console.log(err)
+    //         }
+    //         else{
+    //             // console.log(product)
+    //         }
+    //     })
+    //     order.save()
+    //     .then(res => {
+    //             console.log('order placed')
+    //             console.log(res)
+    //     });
+    // }
 })
 
 routes.route('/editOrder').post(function(req, res) {
@@ -409,24 +551,20 @@ routes.route("/addProduct").post(function(req, res) {
     console.log('adding product')
     console.log(req.body)
     let product = new Product(req.body);
+    let review = Review({
+        'userId': req.body.userId,
+        'productName': req.body.productName,
+        reviews: []
+    })
     Product.findOne({'productName': req.body.productName, 'userId': req.body.userId}, 'productName', function(err, prod){
         if(err) return handleError(err);
-        // if (prod){
-        //     console.log('Product already exists')
-        //     res.status(200).send('Product already added')
-        // }
-        // else{
-            console.log('success')
-            product.save()
-            .then(item => {
-                res.set('Content-Type', 'text/plain')
-                res.status(200).send('product added');
-            })
-            // .catch(err => {
-            //     res.status(400).send('Error');
-            // });
-            // res.redirect('/')           
-        // }
+        console.log('success')
+        review.save()
+        product.save()
+        .then(item => {
+            res.set('Content-Type', 'text/plain')
+            res.status(200).send('product added');
+        })
     })
 });
 

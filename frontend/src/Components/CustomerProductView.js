@@ -108,7 +108,7 @@ class CustomerProductView extends Component{
             products: [],
             filter: '',
             itemQuantity: 0,
-            itemsLeft: 0
+            itemsLeft: 0,
         }
         this.onChangeProductName = this.onChangeProductName.bind(this);
         this.onChangePrice = this.onChangePrice.bind(this);
@@ -170,16 +170,22 @@ class CustomerProductView extends Component{
                 productId: id,
                 productName: productName
             }
-            axios.post('http://localhost:4000/placeOrder', order)
-            .then(res => {
-                console.log(res)
-            })
-            this.setState({order: true})
-            this.fetchProducts()
+            if(this.state[id] > 0)
+            {
+                axios.post('http://localhost:4000/placeOrder', order)
+                .then(res => {
+                    console.log(res)
+                })
+                this.setState({order: true})
+                this.props.fetchProducts()
+            }
+            else{
+                console.log('hello')
+                this.setState({order: false})
+            }
             // window.location.reload()
         }
     }
-
     onChangeSearchText(event) {
         this.setState({ searchText: event.target.value });
     }
@@ -213,7 +219,7 @@ class CustomerProductView extends Component{
     }
     render(){
         const {classes} = this.props
-        const allProducts = this.state.data.map(product => <Product key = {product._id} item = {product} order = {this.orderProduct} onChangeItemQuantity = {this.onChangeItemQuantity} type = 'products'/>)
+        const allProducts = this.props.data.map(product => <Product key = {product._id} item = {product} order = {this.orderProduct} onChangeItemQuantity = {this.onChangeItemQuantity} type = 'products'/>)
         return(
             <div>
                 <div className = {classes.divider}>
@@ -231,7 +237,7 @@ class CustomerProductView extends Component{
                                 value = {this.state.searchText}
                              />
                             <IconButton>
-                                <SearchIcon onClick={this.fetchProducts} />
+                                <SearchIcon onClick={this.props.fetchProducts} />
                             </IconButton>
                                 <InputLabel shrink id="demo-simple-select-placeholder-label-label">
                                 Sort By
@@ -247,7 +253,7 @@ class CustomerProductView extends Component{
                                 </NativeSelect>
 
                                 <IconButton>
-                                    <SortIcon onClick={this.fetchProducts} />
+                                    <SortIcon onClick={this.props.fetchProducts} />
                                 </IconButton>
 
                         </Box>

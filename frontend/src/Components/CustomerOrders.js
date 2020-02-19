@@ -108,12 +108,12 @@ class CustomerOrders extends Component{
             products: [],
             filter: '',
             itemQuantity: 0,
-            itemsLeft: 0
+            itemsLeft: 0,
+            review: false,
+            reviewText: '',
+            reviewShow: false
         }
-        this.onChangeProductName = this.onChangeProductName.bind(this);
-        this.onChangePrice = this.onChangePrice.bind(this);
         this.onChangeFilter = this.onChangeFilter.bind(this);
-        this.onChangeQuantity = this.onChangeQuantity.bind(this);
         this.onChangeItemQuantity = this.onChangeItemQuantity.bind(this);
         this.onChangeSearchText = this.onChangeSearchText.bind(this);
         // this.onChangePassword = this.onChangePassword.bind(this);
@@ -122,6 +122,9 @@ class CustomerOrders extends Component{
         // this.onSubmit = this.onSubmit.bind(this)
         this.fetchProducts = this.fetchProducts.bind(this)
         this.orderProduct = this.orderProduct.bind(this)
+        this.changeReview = this.changeReview.bind(this)
+        this.onChangeReview = this.onChangeReview.bind(this)
+        this.saveReview = this.saveReview.bind(this)
     }
     componentDidMount(){
         this.fetchProducts()
@@ -133,8 +136,8 @@ class CustomerOrders extends Component{
     
     fetchProducts = async() => {
         const {cookies} = this.props
-        console.log('hello')
-        console.log(this.state.searchText)
+        // console.log('hello')
+        // console.log(this.state.searchText)
         const order = {
             userId: cookies.get('user'),
             productName: this.state.searchText,
@@ -178,23 +181,19 @@ class CustomerOrders extends Component{
                 console.log(res)
             })
             this.setState({order: true})
-            this.props.fetchProducts()
+            this.props.getOrders()
             // window.location.reload()
         }
     }
-
+    onChangeReview(event) {
+        this.setState({ reviewText: event.target.value });
+    }
     onChangeSearchText(event) {
         this.setState({ searchText: event.target.value });
     }
     onChangeFilter(event) {
         this.setState({ filter: event.target.value });
         console.log(this.state.filter)
-    }
-    onChangeProductName(event) {
-        this.setState({ productName: event.target.value });
-    }
-    onChangePrice(event) {
-        this.setState({ bundlePrice: event.target.value });
     }
     onChangeItemQuantity(event, id) {
         console.log(event.target.value)
@@ -203,8 +202,29 @@ class CustomerOrders extends Component{
             // console.log(this.stat)
         });
     }
-    onChangeQuantity(event) {
-        this.setState({ bundleQuantity: event.target.value });
+    changeReview(){
+        console.log(this.state)
+        if(this.state.review == true){
+            this.setState({review: false})
+        }
+        else{
+            this.setState({review: true})
+        }
+    }
+    saveReview(productName, vendorId){
+        const {cookies} = this.props
+        const review = {
+            vendorId: vendorId,
+            productName: productName,
+            review: this.state.reviewText,
+            customerId: cookies.get('user')
+        }
+        if(this.state.reviewText !== ''){
+            axios.post('http://localhost:4000/saveReview', review)
+            .then(res => {
+            })
+        }
+        this.changeReview()
     }
     logOut(){
         const {cookies} = this.props
@@ -216,7 +236,7 @@ class CustomerOrders extends Component{
     }
     render(){
         const {classes} = this.props
-        const allProducts = this.props.data.map(product => <Product item = {product} type = 'orders' order = {this.orderProduct} onChangeItemQuantity = {this.onChangeItemQuantity}/>)
+        const allProducts = this.props.data.map(product => <Product item = {product} type = 'orders' order = {this.orderProduct} onChangeItemQuantity = {this.onChangeItemQuantity} changeReview = {this.changeReview} review = {this.state.review} reviewText = {this.props.reviewText} onChangeReview = {this.onChangeReview} saveReview = {this.saveReview}/>)
         return(
             <div>
                 <div className = {classes.divider}>
@@ -234,7 +254,7 @@ class CustomerOrders extends Component{
                                 value = {this.props.searchText}
                              />
                             <IconButton>
-                                <SearchIcon onClick={this.props.fetchProducts} />
+                                <SearchIcon onClick={this.props.getOrders} />
                             </IconButton>
                                 <InputLabel shrink id="demo-simple-select-placeholder-label-label">
                                 Sort By
@@ -250,7 +270,7 @@ class CustomerOrders extends Component{
                                 </NativeSelect>
 
                                 <IconButton>
-                                    <SortIcon onClick={this.props.fetchProducts} />
+                                    <SortIcon onClick={this.props.getOrders} />
                                 </IconButton>
 
                         </Box>
