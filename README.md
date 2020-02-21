@@ -7,7 +7,8 @@ The app simulates an e-commmerce platform where the vendors only ship their prod
 ### Run the Backend
 1. ```cd <project-dir>```
 2. ```cd backend```
-3. ```node index.js```
+3. ```npm install``` (to install all the requirements)
+4. ```node index.js```
 
 ### Run the Frontend
 1. ```cd <project-dir>```
