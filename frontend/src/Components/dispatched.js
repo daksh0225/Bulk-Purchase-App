@@ -144,7 +144,7 @@ const styles = theme => ({
 
     render(){
         const {classes} = this.props
-        const allProducts = this.state.data.map(product => <Product key = {product._id} item = {product} remove = {this.removeProduct} action = 'Remove'/>)
+        const allProducts = this.state.data.map(product => <Product key = {product._id} item = {product} remove = {this.removeProduct} action = 'Dispatched'/>)
         return(
             <div>
                 <div className = {classes.divider}>

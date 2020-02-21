@@ -32,6 +32,12 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextareaAutosize from '@material-ui/core/TextareaAutosize';
+import SentimentVeryDissatisfiedIcon from '@material-ui/icons/SentimentVeryDissatisfied';
+import SentimentDissatisfiedIcon from '@material-ui/icons/SentimentDissatisfied';
+import SentimentSatisfiedIcon from '@material-ui/icons/SentimentSatisfied';
+import SentimentSatisfiedAltIcon from '@material-ui/icons/SentimentSatisfiedAltOutlined';
+import SentimentVerySatisfiedIcon from '@material-ui/icons/SentimentVerySatisfied';
+import Rating from '@material-ui/lab/Rating'
 import {
     BrowserRouter as Router,
     Switch,
@@ -100,7 +106,40 @@ const styles = theme => ({
     //   flexDirection: 'row',
     //   justifyContent: 'spaceAround'
     // }
-  });
+});
+
+
+const customIcons = {
+    1: {
+      icon: <SentimentVeryDissatisfiedIcon />,
+      label: 'Very Dissatisfied',
+    },
+    2: {
+      icon: <SentimentDissatisfiedIcon />,
+      label: 'Dissatisfied',
+    },
+    3: {
+      icon: <SentimentSatisfiedIcon />,
+      label: 'Neutral',
+    },
+    4: {
+      icon: <SentimentSatisfiedAltIcon />,
+      label: 'Satisfied',
+    },
+    5: {
+      icon: <SentimentVerySatisfiedIcon />,
+      label: 'Very Satisfied',
+    },
+  };
+  
+  function IconContainer(props) {    
+    const { value, ...other } = props;
+    return <span {...other}>{customIcons[value].icon}</span>;
+  }
+  
+  IconContainer.propTypes = {
+      value: PropTypes.number.isRequired,
+};
 
 class Product extends Component{
     constructor(){
@@ -109,10 +148,11 @@ class Product extends Component{
             quantity: 0,
             statusIndex: 0,
             reviewShow: false,
-            data: []
-       }
-       this.hideReview = this.hideReview.bind(this)
-       this.showReviews = this.showReviews.bind(this)
+            data: [],
+            ratings: []
+        }
+        this.hideReview = this.hideReview.bind(this)
+        this.showReviews = this.showReviews.bind(this)
     }
     componentDidMount(){
         if(this.props.status === 'waiting'){
@@ -124,9 +164,26 @@ class Product extends Component{
         else if(this.props.status === 'dispatched'){
             this.setState({statusIndex: 2})
         }
+        // this.showReviews()
+        // this.getVendorRating()
     }
-    hideReview(){
-        this.setState({reviewShow: false})
+    getVendorRating(userId, productName){
+        const query = {
+            userId: userId,
+            productName: productName
+        }
+        axios.post('http://localhost:4000/getReviews', query)
+        .then(res => {
+            this.setState({
+                data: res.data.reviews,
+                ratings: res.data.ratings
+            }, () => {
+                console.log(res.data)
+                console.log(this.state.data)
+                console.log(this.state.ratings)
+            })
+        })
+        this.setState({reviewShow: true})
     }
     showReviews(userId, productName){
         const query = {
@@ -136,18 +193,28 @@ class Product extends Component{
         axios.post('http://localhost:4000/getReviews', query)
         .then(res => {
             this.setState({
-                data: res.data.reviews
+                data: res.data.reviews,
+                ratings: res.data.ratings
             }, () => {
+                console.log(res.data)
                 console.log(this.state.data)
+                console.log(this.state.ratings)
             })
         })
         this.setState({reviewShow: true})
     }
-
+    hideReview(){
+        this.setState({reviewShow: false})
+    }
     render(){
         const {classes} = this.props
         const steps = getSteps()
         var activeStep = 0
+        let vendoravg = 0
+        for(let i=0;i<this.state.ratings.length;i++){
+            vendoravg += this.state.ratings[i]
+        }
+        // vendoravg /= this.state.ratings.length
         const reviews = this.state.data.map((rr, index) => 
             <p>{rr}</p>
         )
@@ -182,6 +249,7 @@ class Product extends Component{
                                     </Typography>
                                     <Typography variant="body2" component="p">
                                         Vendor: <Button onClick = {() => this.showReviews(this.props.item.userId, this.props.item.productName)}>{this.props.item.vendorName}</Button>
+                                        {vendoravg}
                                     </Typography>
                                 </Box>
                                 <Box display="flex" alignItems="center" flexDirection="column" justifyContent="space-around">
@@ -202,31 +270,6 @@ class Product extends Component{
                                     />
                                 </Box>
                             </Box>
-                            <Dialog open={this.state.reviewShow} onClose={() => this.hideReview()} aria-labelledby="form-dialog-title">
-                                <DialogTitle id="form-dialog-title">Review</DialogTitle>
-                                <DialogContent>
-                                <DialogContentText>
-                                    Customer Reviews for this product
-                                </DialogContentText>
-                                {reviews}
-                                {/* <TextField
-                                    autoFocus
-                                    margin="dense"
-                                    id="name"
-                                    label="Write a Review"
-                                    type="text"
-                                    value = {this.props.reviewText}
-                                    onChange = {this.props.onChangeReview}
-                                    fullWidth
-                                /> */}
-
-                                </DialogContent>
-                                <DialogActions>
-                                <Button onClick={() => this.hideReview()} color="primary">
-                                    Close
-                                </Button>
-                                </DialogActions>
-                            </Dialog>
                         </div>
 
                         <div style={this.props.type === 'orders' ? {} : {display: 'none'}}>
@@ -290,32 +333,6 @@ class Product extends Component{
                                     </div>
                                 </div>
                             </Box>
-                            <Dialog open={this.props.review} onClose={() => this.props.changeReview()} aria-labelledby="form-dialog-title">
-                                <DialogTitle id="form-dialog-title">Review</DialogTitle>
-                                <DialogContent>
-                                {/* <DialogContentText>
-                                    Write a review for this product
-                                </DialogContentText> */}
-                                <TextField
-                                    autoFocus
-                                    margin="dense"
-                                    id="name"
-                                    label="Write a Review"
-                                    type="text"
-                                    value = {this.props.reviewText}
-                                    onChange = {this.props.onChangeReview}
-                                    fullWidth
-                                />
-                                </DialogContent>
-                                <DialogActions>
-                                <Button onClick={() => this.props.changeReview()} color="primary">
-                                    Cancel
-                                </Button>
-                                <Button onClick={() => this.props.saveReview(this.props.item.productName, this.props.item.vendorId)} color="primary">
-                                    Submit
-                                </Button>
-                                </DialogActions>
-                            </Dialog>
                         </div>
                     </CardContent>
                     <CardActions className={classes.action}>
@@ -326,10 +343,72 @@ class Product extends Component{
                             <Button size="small" style={{color: "blue"}} onClick = {() => this.props.order(this.props.item.orderId, this.props.item.productName, this.props.item.itemsLeft, this.props.item._id, this.props.item.itemQuantity)} >Edit Order</Button>
                         </span>
                         <span style = {this.props.type === 'orders' && this.props.item.status === 'dispatched'? {} : {display: 'none'}}>
-                            <Button size="small" style={{color: "blue"}} onClick = {() => this.props.changeReview()} >Give Review</Button>
+                            <Button size="small" style={{color: "blue"}} onClick = {() => this.props.changeReview('true')} >Give Review</Button>
                         </span>
                     </CardActions>
                 </Card>
+                <Dialog open = {this.props.review} onClose={() => this.props.changeReview('false')} aria-labelledby="form-dialog-title">
+                    <DialogTitle id="form-dialog-title">Review</DialogTitle>
+                    <DialogContent>
+                    <DialogContentText>
+                        Write a review for this product
+                    </DialogContentText>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        id="name"
+                        label="Write a Review"
+                        type="text"
+                        value = {this.props.reviewText}
+                        onChange = {this.props.onChangeReview}
+                        fullWidth
+                    />
+                    <DialogContentText>
+                        How would you rate this products
+                    </DialogContentText>
+                    <Rating
+                    name="customized-icons"
+                    // defaultValue={this.props.satsified}
+                    value = {this.props.satisfied}
+                    // getLabelText={value => customIcons[value].label}
+                    IconContainerComponent={IconContainer}
+                    onChange = {this.props.onChangeSatisfaction}
+                    />
+                    </DialogContent>
+                    <DialogActions>
+                    <Button onClick={() => this.props.changeReview('false')} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={() => this.props.saveReview(this.props.item.productName, this.props.item.vendorId)} color="primary">
+                        Submit
+                    </Button>
+                    </DialogActions>
+                </Dialog>
+                <Dialog open={this.state.reviewShow} onClose={() => this.hideReview()} aria-labelledby="form-dialog-title">
+                    <DialogTitle id="form-dialog-title">Customer Reviews</DialogTitle>
+                    <DialogContent>
+                    <DialogContentText>
+                        Customer Reviews for this product
+                    </DialogContentText>
+                    {reviews}
+                    {/* <TextField
+                        autoFocus
+                        margin="dense"
+                        id="name"
+                        label="Write a Review"
+                        type="text"
+                        value = {this.props.reviewText}
+                        onChange = {this.props.onChangeReview}
+                        fullWidth
+                    /> */}
+
+                    </DialogContent>
+                    <DialogActions>
+                    <Button onClick={() => this.hideReview()} color="primary">
+                        Close
+                    </Button>
+                    </DialogActions>
+                </Dialog>
             </Grid>
         )
     }

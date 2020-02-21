@@ -111,7 +111,8 @@ class CustomerOrders extends Component{
             itemsLeft: 0,
             review: false,
             reviewText: '',
-            reviewShow: false
+            reviewShow: false,
+            satisfied: 0
         }
         this.onChangeFilter = this.onChangeFilter.bind(this);
         this.onChangeItemQuantity = this.onChangeItemQuantity.bind(this);
@@ -125,6 +126,7 @@ class CustomerOrders extends Component{
         this.changeReview = this.changeReview.bind(this)
         this.onChangeReview = this.onChangeReview.bind(this)
         this.saveReview = this.saveReview.bind(this)
+        this.onChangeSatisfaction = this.onChangeSatisfaction.bind(this)
     }
     componentDidMount(){
         this.fetchProducts()
@@ -193,7 +195,14 @@ class CustomerOrders extends Component{
     }
     onChangeFilter(event) {
         this.setState({ filter: event.target.value });
-        console.log(this.state.filter)
+    }
+    onChangeSatisfaction(event) {
+        if(event.target.value == this.state.satisfied){
+            this.setState({satisfied: 0})
+        }
+        else{
+            this.setState({ satisfied: event.target.value });
+        }
     }
     onChangeItemQuantity(event, id) {
         console.log(event.target.value)
@@ -217,11 +226,15 @@ class CustomerOrders extends Component{
             vendorId: vendorId,
             productName: productName,
             review: this.state.reviewText,
-            customerId: cookies.get('user')
+            customerId: cookies.get('user'),
+            rating: this.state.satisfied
         }
-        if(this.state.reviewText !== ''){
+        if(this.state.reviewText !== '' && this.state.satisfied > 0){
             axios.post('http://localhost:4000/saveReview', review)
             .then(res => {
+                this.setState({
+                    satisfied: 0
+                })
             })
         }
         this.changeReview()
@@ -236,7 +249,7 @@ class CustomerOrders extends Component{
     }
     render(){
         const {classes} = this.props
-        const allProducts = this.props.data.map(product => <Product item = {product} type = 'orders' order = {this.orderProduct} onChangeItemQuantity = {this.onChangeItemQuantity} changeReview = {this.changeReview} review = {this.state.review} reviewText = {this.props.reviewText} onChangeReview = {this.onChangeReview} saveReview = {this.saveReview}/>)
+        const allProducts = this.props.data.map(product => <Product item = {product} type = 'orders' order = {this.orderProduct} onChangeItemQuantity = {this.onChangeItemQuantity} changeReview = {this.changeReview} review = {this.state.review} reviewText = {this.props.reviewText} onChangeReview = {this.onChangeReview} saveReview = {this.saveReview} onChangeSatisfaction = {this.onChangeSatisfaction} satisfied = {this.state.satisfied}/>)
         return(
             <div>
                 <div className = {classes.divider}>

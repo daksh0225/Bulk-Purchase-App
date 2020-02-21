@@ -153,34 +153,57 @@ routes.route('/searchProducts').post(function(req, res) {
     }
 });
 
-routes.route('/dispatchedProucts').post(function(req, res){
-    consle.log('fetching dispatched')
+routes.route('/dispatchedProducts').post(function(req, res){
+    console.log('fetching dispatched')
     console.log(req.body)
-    pp = []
-    Product.find({'userId': req.body.userId}, '', function(err, products){
+    var dp = []
+    Product.find({'userId': req.body.userId, 'dispatched': true, 'removed': false}, '', async function(err, products){
         if(err){
             console.log(err)
         }
         else{
             let done = 0
+            // console.log(products[0])
             for(let i = 0; i<products.length; i++){
-                Review.findOne({'userId': req.body.userId, 'productName': products[i].productName, 'dispatched': true, 'removed': false}, '', function(err, review){
-                    const p = {
-                        'userId': req.body.userId,
-                        'productName': products[i].productName,
-                        'bundlePrice': products[i].bundlePrice,
-                        'bundleQuantity': products[i].bundleQuantity,
-                        'itemsLeft': products[i].itemsLeft,
-                        'readyToDispatch': products[i].readyToDispatch,
-                        'dispatched': products[i].dispatched,
-                        'removed': products[i].removed,
-                        'reviews': review.reviews
-                    }
-                    pp.push(p)
+                await Review.findOne({'userId': req.body.userId, 'productName': products[i].productName}, '', function(err, review){
+                    console.log(review)
+                    if(review){
+                        // var cus = []
+                        // let d = 0
+                        // for(let = j=0; j<review.customers.length; j++){
+                        //     User.findOne({'_id': review.customers[j]}, 'firstName lastName', function(err, user){
+                        //         if(user){
+                        //             cus.push(user.firstName+' '+user.lastName)
+                        //         }
+                        // })
+                        //     // console.log(cus+'fsf')
+                        //         d++
+                        // }
+                        // if(d==review.customers.length){
+                            const product = {
+                                'userId': req.body.userId,
+                                'productName': products[i].productName,
+                                'bundlePrice': products[i].bundlePrice,
+                                'bundleQuantity': products[i].bundleQuantity,
+                                'itemsLeft': products[i].itemsLeft,
+                                'readyToDispatch': products[i].readyToDispatch,
+                                'dispatched': products[i].dispatched,
+                                'removed': products[i].removed,
+                                'reviews': review.reviews,
+                                'ratings': review.ratings,
+                                'customers': review.customers,
+                                // 'names': cus
+                            }
+                                dp.push(product)
+                                console.log(product)
+                            }
+                        // }
+                        // console.log('flsdjfs'+p.productName)
                 })
                 done++
                 if(done == products.length){
-                    res.json(pp)
+                    console.log('fsdfsd'+dp)
+                    res.json(dp)
                 }
             }
         }
@@ -188,7 +211,8 @@ routes.route('/dispatchedProucts').post(function(req, res){
 })
 routes.route('/getReviews').post(function(req, res){
     console.log(req.body)
-    Review.findOne({'userId': req.body.userId, 'productName': req.body.productName}, 'reviews', function(err, review){
+    console.log('hello')
+    Review.findOne({'userId': req.body.userId, 'productName': req.body.productName}, 'reviews ratings', function(err, review){
         if(err) console.log(err)
         if(review){
             console.log(review)
@@ -414,7 +438,7 @@ routes.route('/saveReview').post(function(req, res) {
     // itemsLeft = req.body.itemsLeft
     // if(itemsLeft == 0){
     console.log(req.body)
-    Review.findOneAndUpdate({'productName': req.body.productName, 'userId': req.body.vendorId}, {$push : {reviews: req.body.review}}, function(err, review){
+    Review.findOneAndUpdate({'productName': req.body.productName, 'userId': req.body.vendorId}, {$push : {reviews: req.body.review, ratings: req.body.rating, customers: req.body.customerId}}, function(err, review){
         if(err){
             console.log(err)
         }
@@ -554,7 +578,9 @@ routes.route("/addProduct").post(function(req, res) {
     let review = Review({
         'userId': req.body.userId,
         'productName': req.body.productName,
-        reviews: []
+        rating: [],
+        reviews: [],
+        customers: []
     })
     Product.findOne({'productName': req.body.productName, 'userId': req.body.userId}, 'productName', function(err, prod){
         if(err) return handleError(err);

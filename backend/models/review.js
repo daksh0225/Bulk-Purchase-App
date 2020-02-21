@@ -7,7 +7,9 @@ var ReviewSchema = new Schema(
     	// customers: String,
     	// productId: String,
     	productName: String,
-    	reviews: [String]
+    	reviews: [String],
+    	ratings: [Number],
+    	customers: [String]
     	// itemQuantity: Number,
     },
     { collection: 'reviews'}
