@@ -132,7 +132,7 @@ class CustomerProductView extends Component{
     }
     fetchProducts = async() => {
         const {cookies} = this.props
-        console.log('hello')
+        console.log('hello123')
         console.log(this.state.searchText)
         const product = {
             productName: this.state.searchText,
@@ -233,8 +233,8 @@ class CustomerProductView extends Component{
                                 id="searchText"
                                 name="searchText"
                                 autoComplete="searchText"
-                                onChange = {this.onChangeSearchText}
-                                value = {this.state.searchText}
+                                onChange = {(event) => {this.props.onChangeSearchText(event)}}
+                                value = {this.props.searchText}
                              />
                             <IconButton>
                                 <SearchIcon onClick={this.props.fetchProducts} />
@@ -243,8 +243,8 @@ class CustomerProductView extends Component{
                                 Sort By
                                 </InputLabel>
                                 <NativeSelect
-                                    value={this.state.filter}
-                                    onChange={this.onChangeFilter}
+                                    value={this.props.filter}
+                                    onChange={(event) => {this.props.onChangeFilter(event)}}
                                 >
                                     <option value="">None</option>
                                     <option value='bundlePrice'>By Price</option>

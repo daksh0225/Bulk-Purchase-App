@@ -130,15 +130,15 @@ class SignUp extends Component{
             error: res.data,
           })
           if(res.data == 'user added'){
-            cookies.set('loggedIn', true)
-            if(this.state.type == 'customer'){
-              cookies.set('customer', true)
-              cookies.set('vendor', false)
-            }
-            else{
-              cookies.set('customer', false)
-              cookies.set('vendor', true)
-            }
+            // cookies.set('loggedIn', true)
+            // if(this.state.type == 'customer'){
+            //   cookies.set('customer', true)
+            //   cookies.set('vendor', false)
+            // }
+            // else{
+            //   cookies.set('customer', false)
+            //   cookies.set('vendor', true)
+            // }
             this.props.history.push('/')
             window.location.reload()
           }

@@ -119,6 +119,10 @@ routes.route('/searchProducts').post(function(req, res) {
                 console.log('sending response')
                 // console.log(products)
                 let done = 0
+                if(done == products.length){
+                	console.log('fdsjlfsjl')
+                	res.send(pp)
+                }
                 for(let i = 0; i<products.length; i++){
                     User.findOne({'_id': products[i].userId}, '', function(err, user){
                         if(user){

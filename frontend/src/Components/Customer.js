@@ -127,6 +127,7 @@ class Customer extends Component{
     onChangeSearchText(event) {
         this.setState({ searchText: event.target.value }, () => {
             console.log(this.state.searchText)
+            console.log('yha pr')
         });
     }
     onChangeFilter(event) {
@@ -135,7 +136,7 @@ class Customer extends Component{
     }
     fetchProducts = async() => {
         const {cookies} = this.props
-        console.log('hello')
+        console.log('helloazbc')
         console.log(this.state.searchText)
         const product = {
             productName: this.state.searchText,
